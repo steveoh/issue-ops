@@ -1,0 +1,101 @@
+name: (🔐 UGRC internal use) SGID deprecation
+description: SGID data is no longer relevant or has been replaced
+title: "Remove {{ display-name }} from the SGID"
+labels: ["deprecation", "porter"]
+assignees:
+  - steveoh
+body:
+  - type: input
+    id: display-name
+    attributes:
+      label: Display Name
+      description: Name or identifier of the data set
+      placeholder: e.g., Utah Avalanche Paths
+    validations:
+      required: true
+
+  - type: textarea
+    id: deprecation-reason
+    attributes:
+      label: Reasons for Deprecation
+      description: Explain why this data source is being deprecated or has been deprecated
+      placeholder: e.g., Data is outdated, superseded by newer dataset, no longer maintained, data quality issues, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: migration-guide
+    attributes:
+      label: Migration Guide
+      description: Provide guidance on what users should use instead of this deprecated data source
+      placeholder: e.g., Use the new dataset at schema.new_table, migrate to ArcGIS Online service at URL, contact department for alternative data sources, etc.
+    validations:
+      required: true
+
+  - type: input
+    id: internal-sgid-table
+    attributes:
+      label: Internal SGID Table
+      description: Enter the schema.tableName if exists in Internal SGID (leave empty if not exists)
+      placeholder: e.g., cadastre.ParcelFabric
+
+  - type: input
+    id: open-sgid-table
+    attributes:
+      label: Open SGID Table
+      description: Enter the schema.tableName if published in Open SGID (leave empty if not published)
+      placeholder: e.g., boundaries.county_boundaries
+
+  - type: input
+    id: arcgis-online-url
+    attributes:
+      label: ArcGIS Online URL
+      description: Enter the ArcGIS Online URL if published (leave empty if not published)
+      placeholder: https://www.arcgis.com/home/item.html?id=...
+
+  - type: input
+    id: sgid-on-arcgis-url
+    attributes:
+      label: SGID on ArcGIS URL
+      description: Enter the SGID on ArcGIS URL if shared (leave empty if not shared)
+      placeholder: https://opendata.gis.utah.gov/datasets/.../about
+
+  - type: input
+    id: gis-utah-gov-url
+    attributes:
+      label: Product Page URL (gis.utah.gov)
+      description: Enter the product page URL on gis.utah.gov if exists (leave empty if missing)
+      placeholder: https://gis.utah.gov/products/sgid/category/...
+
+  - type: input
+    id: sgid-index-id
+    attributes:
+      label: SGID Index ID
+      description: Enter the [SGID Index](https://docs.google.com/spreadsheets/d/11ASS7LnxgpnD0jN4utzklREgMf1pcvYjcXcIcESHweQ/edit?gid=1024261148#gid=1024261148) ID if exists (create if missing).
+      placeholder: 1asdf-asdf98u-asdf-23422s
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: source
+    attributes:
+      label: Source
+      description: Select the source type(s)
+      options:
+        - label: Manual
+        - label: Farm from AGOL
+        - label: Other
+
+  - type: input
+    id: source-other
+    attributes:
+      label: Other Source Details
+      description: If "Other" is selected above, please specify what the other source is
+      placeholder: e.g., API feed, External database, etc.
+
+  - type: input
+    id: archives-record-series
+    attributes:
+      label: Archives Record Series
+      description: Enter the record series identifier if archived (leave empty if none)
+      placeholder: e.g., Series 12345, RS-2024-GIS-001
