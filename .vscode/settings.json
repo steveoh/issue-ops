@@ -4,6 +4,7 @@
     "arcgis",
     "cadastre",
     "SGID",
-    "UGRC"
+    "UGRC",
+    "uuidv"
   ]
 }

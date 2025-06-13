@@ -1,0 +1,47 @@
+{
+  "name": "@steveoh/issue-ops",
+  "version": "1.0.0",
+  "description": "GitHub issue operations and automation tools",
+  "type": "module",
+  "main": "lib/main.js",
+  "types": "lib/main.d.ts",
+  "scripts": {
+    "build": "pnpm clean && tsc",
+    "check": "tsc -b",
+    "dev": "tsx src/main.ts",
+    "process-issue": "pnpm build && node lib/main.js",
+    "process-issue:dev": "tsx src/main.ts",
+    "clean": "rm -rf lib",
+    "test": "pnpm build && ava"
+  },
+  "bin": {
+    "issue-ops-process": "lib/main.js"
+  },
+  "ava": {
+    "files": [
+      "lib/test/**/*.test.js"
+    ],
+    "verbose": true
+  },
+  "keywords": [
+    "github",
+    "issues",
+    "automation",
+    "sgid"
+  ],
+  "author": "UGRC",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/node": "^20.0.0",
+    "ava": "^6.4.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.25.63"
+  }
+}
