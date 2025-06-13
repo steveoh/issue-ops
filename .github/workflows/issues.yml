@@ -14,6 +14,9 @@ jobs:
   process-issue:
     name: 🔍 Check issue
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
 
     steps:
     - name: ⬇️ Set up code
@@ -67,6 +70,7 @@ jobs:
       run: node lib/src/main.js
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
         ISSUE_NUMBER: ${{ steps.issue-info.outputs.issue_number }}
         ISSUE_TITLE: ${{ steps.issue-info.outputs.issue_title }}
         ISSUE_BODY: ${{ steps.issue-info.outputs.issue_body }}

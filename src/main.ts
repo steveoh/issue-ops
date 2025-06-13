@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod/v4';
+import { Octokit } from '@octokit/rest';
 
 // Define the allowed field names in one place
 const ISSUE_DATA_FIELDS = [
@@ -25,6 +26,18 @@ type IssueDataFields = typeof ISSUE_DATA_FIELDS[number];
 
 interface IssueData extends Partial<Record<IssueDataFields, string>> {
   [key: string]: string | undefined;
+}
+
+// Validation result types
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
+interface ValidationResult {
+  success: boolean;
+  errors: ValidationError[];
+  data?: z.infer<typeof IssueDataSchema>;
 }
 
 // Zod schema for issue data validation
@@ -81,6 +94,61 @@ async function validateSgidIndexId(id: string) {
   return true;
 }
 
+// Function to post a comment to the GitHub issue
+async function postIssueComment(validationResult: ValidationResult, issueData: IssueData): Promise<void> {
+  if (!octokit || !githubRepository || !issueNumber) {
+    console.log('ℹ️  Skipping GitHub comment - missing required GitHub context');
+    return;
+  }
+
+  const [owner, repo] = githubRepository.split('/');
+  if (!owner || !repo) {
+    console.error('❌ Invalid GitHub repository format:', githubRepository);
+    return;
+  }
+
+  try {
+    let commentBody: string;
+
+    if (validationResult.success) {
+      // Success comment with formatted data
+      commentBody = `## ✅ Validation Successful
+
+The issue data has been successfully validated! Here's a summary of the processed data:
+
+${Object.entries(issueData)
+  .filter(([_, value]) => value !== undefined)
+  .map(([key, value]) => `- **${key}**: ${value}`)
+  .join('\n')}
+
+The data is ready for further processing.`;
+    } else {
+      // Error comment with details
+      commentBody = `## ❌ Validation Failed
+
+The following validation errors were found:
+
+${validationResult.errors
+  .map(error => `- **${error.field}**: ${error.message}`)
+  .join('\n')}
+
+Please review and correct the issue template data, then trigger the workflow again.`;
+    }
+
+    await octokit.rest.issues.createComment({
+      owner,
+      repo,
+      issue_number: parseInt(issueNumber, 10),
+      body: commentBody
+    });
+
+    console.log(`✅ Posted validation ${validationResult.success ? 'success' : 'failure'} comment to issue #${issueNumber}`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('❌ Failed to post issue comment:', errorMessage);
+  }
+}
+
 console.log('🚀 Starting issue processing...');
 
 // Get environment variables from GitHub Actions
@@ -88,6 +156,10 @@ const issueNumber: string | undefined = process.env.ISSUE_NUMBER;
 const issueTitle: string | undefined = process.env.ISSUE_TITLE;
 const issueBody: string | undefined = process.env.ISSUE_BODY;
 const githubToken: string | undefined = process.env.GITHUB_TOKEN;
+const githubRepository: string | undefined = process.env.GITHUB_REPOSITORY;
+
+// Initialize GitHub API client
+const octokit = githubToken ? new Octokit({ auth: githubToken }) : null;
 
 // Process issue data
 export async function processIssue(): Promise<void> {
@@ -113,6 +185,9 @@ export async function processIssue(): Promise<void> {
     // Validate the data using Zod schema
     const validationResult = await validateIssueData(data);
 
+    // Post a comment on the issue with validation results
+    await postIssueComment(validationResult, data);
+
     if (!validationResult.success) {
       console.error('❌ Validation failed:');
       validationResult.errors.forEach(error => {
@@ -128,18 +203,6 @@ export async function processIssue(): Promise<void> {
     console.error('❌ Issue processing failed:', errorMessage);
     process.exit(1);
   }
-}
-
-// Validation result types
-interface ValidationError {
-  field: string;
-  message: string;
-}
-
-interface ValidationResult {
-  success: boolean;
-  errors: ValidationError[];
-  data?: z.infer<typeof IssueDataSchema>;
 }
 
 // Validate issue data using Zod schema
