@@ -59,23 +59,8 @@ test('validateIssueData validates successfully with minimal valid data', async (
   t.is(result.errors.length, 0);
   t.truthy(result.data);
   t.is(result.data?.['display-name'], 'Test Dataset');
+  t.is(result.data?.['internal-sgid-table'], 'geoscience.AvalanchePaths');
 });
-
-test('validateIssueData validates with only required fields', async (t) => {
-  const onlyRequiredData = {
-    'display-name': 'Required Field Test',
-    'internal-sgid-table': 'test.required_table'
-  };
-
-  const result = await validateIssueData(onlyRequiredData);
-
-  t.true(result.success);
-  t.is(result.errors.length, 0);
-  t.truthy(result.data);
-  t.is(result.data?.['display-name'], 'Required Field Test');
-  t.is(result.data?.['internal-sgid-table'], 'test.required_table');
-});
-
 
 test('validateIssueData fails with empty display name', async (t) => {
   const result = await validateIssueData(emptyDisplayNameData);
@@ -121,16 +106,37 @@ test('validateIssueData fails when only display-name is provided', async (t) => 
 });
 
 test('validateIssueData fails with invalid URLs', async (t) => {
-  const result = await validateIssueData(invalidUrlData);
+  const testCases = [
+    {
+      description: 'Invalid ArcGIS Online URL',
+      data: { ...validMinimalData, 'arcgis-online-url': 'not-a-valid-url' },
+      expectedField: 'arcgis-online-url',
+      expectedMessage: 'Must be a valid URL',
+    },
+    {
+      description: 'Invalid SGID on ArcGIS URL',
+      data: { ...validMinimalData, 'sgid-on-arcgis-url': 'not-a-valid-url' },
+      expectedField: 'sgid-on-arcgis-url',
+      expectedMessage: 'Must be a valid URL',
+    },
+    {
+      description: 'Invalid Product Page URL',
+      data: { ...validMinimalData, 'product-page-url-(gis.utah.gov)': 'not-a-valid-url' },
+      expectedField: 'product-page-url-(gis.utah.gov)',
+      expectedMessage: 'Must be a valid URL',
+    },
+  ];
 
-  t.false(result.success);
-  t.true(result.errors.length > 0);
+  await Promise.all(testCases.map(async (testCase) => {
+    const result = await validateIssueData(testCase.data);
 
-  // Check for ArcGIS Online URL error
-  t.true(result.errors.some(error =>
-    error.field === 'arcgis-online-url' &&
-    error.message.includes('Must be a valid URL')
-  ));
+    t.false(result.success, testCase.description);
+    t.true(result.errors.length > 0, testCase.description);
+    t.true(result.errors.some(error =>
+      error.field === testCase.expectedField &&
+      error.message.includes(testCase.expectedMessage)
+    ), testCase.description);
+  }));
 });
 
 test('validateIssueData fails with invalid UUID', async (t) => {
@@ -145,14 +151,37 @@ test('validateIssueData fails with invalid UUID', async (t) => {
 });
 
 test('validateIssueData fails when product page URL is not from gis.utah.gov', async (t) => {
-  const result = await validateIssueData(nonGisUtahGovUrlData);
+  const testCases = [
+    {
+      description: 'Product page URL is not from gis.utah.gov',
+      data: { ...validMinimalData, 'product-page-url-(gis.utah.gov)': 'https://example.com/page' },
+      expectedField: 'product-page-url-(gis.utah.gov)',
+      expectedMessage: 'Product page URL must be from gis.utah.gov, accessible, and without redirects',
+    },
+    {
+      description: 'Product page URL is from a different subdomain',
+      data: { ...validMinimalData, 'product-page-url-(gis.utah.gov)': 'https://subdomain.gis.utah.gov/page' },
+      expectedField: 'product-page-url-(gis.utah.gov)',
+      expectedMessage: 'Product page URL must be from gis.utah.gov, accessible, and without redirects',
+    },
+    {
+      description: 'Product page contains a redirect',
+      data: { ...validMinimalData, 'product-page-url-(gis.utah.gov)': 'https://gis.utah.gov/data/address-geocoders-locators/' },
+      expectedField: 'product-page-url-(gis.utah.gov)',
+      expectedMessage: 'Product page URL must be from gis.utah.gov, accessible, and without redirects',
+    },
+  ];
 
-  t.false(result.success);
-  t.true(result.errors.length > 0);
-  t.true(result.errors.some(error =>
-    error.field === 'product-page-url-(gis.utah.gov)' &&
-    error.message.includes('gis.utah.gov')
-  ));
+  await Promise.all(testCases.map(async (testCase) => {
+    const result = await validateIssueData(testCase.data);
+
+    t.false(result.success, testCase.description);
+    t.true(result.errors.length > 0, testCase.description);
+    t.true(result.errors.some(error =>
+      error.field === testCase.expectedField &&
+      error.message.includes(testCase.expectedMessage)
+    ), testCase.description);
+  }));
 });
 
 test('validateIssueData handles validation errors gracefully', async (t) => {
