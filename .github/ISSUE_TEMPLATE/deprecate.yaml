@@ -1,7 +1,7 @@
 name: (🔐 UGRC internal use) SGID deprecation
 description: SGID data is no longer relevant or has been replaced
-title: "Remove {{ display-name }} from the SGID"
-labels: ["deprecation", "porter"]
+title: 'Remove {{ display-name }} from the SGID'
+labels: ['deprecation', 'porter']
 assignees:
   - steveoh
 body:
@@ -47,11 +47,11 @@ body:
       placeholder: e.g., boundaries.county_boundaries
 
   - type: input
-    id: arcgis-online-url
+    id: arcgis-online-id
     attributes:
-      label: ArcGIS Online URL
-      description: Enter the ArcGIS Online URL if published (leave empty if not published)
-      placeholder: https://www.arcgis.com/home/item.html?id=...
+      label: ArcGIS Online Item Id
+      description: Enter the ArcGIS Online item id (leave empty if not published)
+      placeholder: 0df199cef1704e5287ae675ee3dbd3bd
 
   - type: input
     id: sgid-on-arcgis-url
@@ -63,14 +63,14 @@ body:
   - type: input
     id: gis-utah-gov-url
     attributes:
-      label: Product Page URL (gis.utah.gov)
+      label: Product Page URL
       description: Enter the product page URL on gis.utah.gov if exists (leave empty if missing)
       placeholder: https://gis.utah.gov/products/sgid/category/...
 
   - type: input
     id: sgid-index-id
     attributes:
-      label: SGID Index ID
+      label: SGID Index Id
       description: Enter the [SGID Index](https://docs.google.com/spreadsheets/d/11ASS7LnxgpnD0jN4utzklREgMf1pcvYjcXcIcESHweQ/edit?gid=1024261148#gid=1024261148) ID if exists (create if missing).
       placeholder: 1asdf-asdf98u-asdf-23422s
     validations:

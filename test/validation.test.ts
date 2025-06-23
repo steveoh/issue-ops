@@ -1,285 +1,292 @@
 import test from 'ava';
-import { validateIssueData } from '../src/main.js';
-
-// Test data fixtures
-const validCompleteData = {
-  'display-name': 'Utah Avalanche Paths',
-  'internal-sgid-table': 'geoscience.AvalanchePaths',
-  'open-sgid-table': 'geoscience.avalanche_paths',
-  'arcgis-online-url': 'https://www.arcgis.com/home/item.html?id=0df199cef1704e5287ae675ee3dbd3bd',
-  'sgid-on-arcgis-url': 'https://opendata.gis.utah.gov/datasets/utah-avalanche-paths/about',
-  'product-page-url-(gis.utah.gov)': 'https://gis.utah.gov/products/sgid/geoscience/avalanche-paths/',
-  'sgid-index-id': '8081a767-ef27-4a17-acb1-88d90c5ed902',
-  'archives-record-series': 'Some archive series'
-};
+import type { IssueDataFields } from '../src/main.js';
+import { validateAndTransform } from '../src/main.js';
 
 const validMinimalData = {
-  'display-name': 'Test Dataset',
-  'internal-sgid-table': 'geoscience.AvalanchePaths'
-};
+  'display-name': 'Utah Avalanche Paths',
+  'internal-sgid-table': 'geoscience.AvalanchePaths',
+} as IssueDataFields;
+
+const validCompleteData = {
+  ...validMinimalData,
+  'open-sgid-table': 'geoscience.avalanche_paths',
+  'arcgis-online-id': '0df199cef1704e5287ae675ee3dbd3bd',
+  'sgid-on-arcgis-url':
+    'https://opendata.gis.utah.gov/datasets/utah-avalanche-paths/about',
+  'product-page-url':
+    'https://gis.utah.gov/products/sgid/geoscience/avalanche-paths/',
+  'sgid-index-id': '8081a767-ef27-4a17-acb1-88d90c5ed902',
+  'archives-record-series': 'Some archive series',
+} as IssueDataFields;
 
 const invalidUrlData = {
-  'display-name': 'Test Dataset',
-  'internal-sgid-table': 'test.table',
-  'arcgis-online-url': 'not-a-valid-url',
+  ...validMinimalData,
   'sgid-on-arcgis-url': 'https://example.com',
-  'product-page-url-(gis.utah.gov)': 'https://wrong-domain.com'
-};
+  'product-page-url': 'https://wrong-domain.com',
+} as IssueDataFields;
 
 const invalidUuidData = {
-  'display-name': 'Test Dataset',
-  'internal-sgid-table': 'test.table',
-  'sgid-index-id': 'not-a-valid-uuid'
-};
+  ...validMinimalData,
+  'sgid-index-id': 'not-a-valid-uuid',
+  'arcgis-online-id': 'nota-valid-uuid',
+} as IssueDataFields;
 
-const emptyDisplayNameData = {
+const emptyRequiredData = {
   'display-name': '',
-  'internal-sgid-table': 'test.table'
-};
+  'internal-sgid-table': '',
+} as IssueDataFields;
 
-const nonGisUtahGovUrlData = {
-  'display-name': 'Test Dataset',
-  'internal-sgid-table': 'test.table',
-  'product-page-url-(gis.utah.gov)': 'https://example.com/page'
-};
-
-test('validateIssueData validates successfully with complete valid data', async (t) => {
-  const result = await validateIssueData(validCompleteData);
+test('validateAndTransform validates successfully with all valid data', async (t) => {
+  const result = await validateAndTransform(validCompleteData);
 
   t.true(result.success);
-  t.is(result.errors.length, 0);
+  t.falsy(result.errors);
   t.truthy(result.data);
-  t.is(result.data?.['display-name'], 'Utah Avalanche Paths');
+  t.is(result.data?.displayName, 'Utah Avalanche Paths');
 });
 
-test('validateIssueData validates successfully with minimal valid data', async (t) => {
-  const result = await validateIssueData(validMinimalData);
+test('validateAndTransform validates successfully with minimal valid data', async (t) => {
+  const result = await validateAndTransform(validMinimalData);
 
   t.true(result.success);
-  t.is(result.errors.length, 0);
+  t.falsy(result.errors);
   t.truthy(result.data);
-  t.is(result.data?.['display-name'], 'Test Dataset');
-  t.is(result.data?.['internal-sgid-table'], 'geoscience.AvalanchePaths');
+  t.is(result.data?.displayName, 'Utah Avalanche Paths');
 });
 
-test('validateIssueData fails with empty display name', async (t) => {
-  const result = await validateIssueData(emptyDisplayNameData);
-
-  t.false(result.success);
-  t.true(result.errors.length > 0);
-  t.true(result.errors.some(error =>
-    error.field === 'display-name' &&
-    error.message.includes('Display name is required')
-  ));
-});
-
-test('validateIssueData fails with missing required fields', async (t) => {
-  const missingRequiredData = {
-    'display-name': 'Test Dataset',
-    // Missing 'internal-sgid-table' which is required
-    'open-sgid-table': 'optional.table'
-  };
-
-  const result = await validateIssueData(missingRequiredData);
-
-  t.false(result.success);
-  t.true(result.errors.length > 0);
-  // Check for internal-sgid-table being required
-  t.true(result.errors.some(error =>
-    error.field === 'internal-sgid-table'
-  ));
-});
-
-test('validateIssueData fails when only display-name is provided', async (t) => {
-  const onlyDisplayNameData = {
-    'display-name': 'Test Dataset'
-    // Missing 'internal-sgid-table' which is required
-  };
-
-  const result = await validateIssueData(onlyDisplayNameData);
-
-  t.false(result.success);
-  t.true(result.errors.length > 0);
-  t.true(result.errors.some(error =>
-    error.field === 'internal-sgid-table'
-  ));
-});
-
-test('validateIssueData fails with invalid URLs', async (t) => {
-  const testCases = [
-    {
-      description: 'Invalid ArcGIS Online URL',
-      data: { ...validMinimalData, 'arcgis-online-url': 'not-a-valid-url' },
-      expectedField: 'arcgis-online-url',
-      expectedMessage: 'Must be a valid URL',
-    },
-    {
-      description: 'Invalid SGID on ArcGIS URL',
-      data: { ...validMinimalData, 'sgid-on-arcgis-url': 'not-a-valid-url' },
-      expectedField: 'sgid-on-arcgis-url',
-      expectedMessage: 'Must be a valid URL',
-    },
-    {
-      description: 'Invalid Product Page URL',
-      data: { ...validMinimalData, 'product-page-url-(gis.utah.gov)': 'not-a-valid-url' },
-      expectedField: 'product-page-url-(gis.utah.gov)',
-      expectedMessage: 'Must be a valid URL',
-    },
-  ];
-
-  await Promise.all(testCases.map(async (testCase) => {
-    const result = await validateIssueData(testCase.data);
-
-    t.false(result.success, testCase.description);
-    t.true(result.errors.length > 0, testCase.description);
-    t.true(result.errors.some(error =>
-      error.field === testCase.expectedField &&
-      error.message.includes(testCase.expectedMessage)
-    ), testCase.description);
-  }));
-});
-
-test('validateIssueData fails with invalid UUID', async (t) => {
-  const result = await validateIssueData(invalidUuidData);
-
-  t.false(result.success);
-  t.true(result.errors.length > 0);
-  t.true(result.errors.some(error =>
-    error.field === 'sgid-index-id' &&
-    error.message.includes('Must be a valid UUID')
-  ));
-});
-
-test('validateIssueData fails when product page URL is not from gis.utah.gov', async (t) => {
-  const testCases = [
-    {
-      description: 'Product page URL is not from gis.utah.gov',
-      data: { ...validMinimalData, 'product-page-url-(gis.utah.gov)': 'https://example.com/page' },
-      expectedField: 'product-page-url-(gis.utah.gov)',
-      expectedMessage: 'Product page URL must be from gis.utah.gov, accessible, and without redirects',
-    },
-    {
-      description: 'Product page URL is from a different subdomain',
-      data: { ...validMinimalData, 'product-page-url-(gis.utah.gov)': 'https://subdomain.gis.utah.gov/page' },
-      expectedField: 'product-page-url-(gis.utah.gov)',
-      expectedMessage: 'Product page URL must be from gis.utah.gov, accessible, and without redirects',
-    },
-    {
-      description: 'Product page contains a redirect',
-      data: { ...validMinimalData, 'product-page-url-(gis.utah.gov)': 'https://gis.utah.gov/data/address-geocoders-locators/' },
-      expectedField: 'product-page-url-(gis.utah.gov)',
-      expectedMessage: 'Product page URL must be from gis.utah.gov, accessible, and without redirects',
-    },
-  ];
-
-  await Promise.all(testCases.map(async (testCase) => {
-    const result = await validateIssueData(testCase.data);
-
-    t.false(result.success, testCase.description);
-    t.true(result.errors.length > 0, testCase.description);
-    t.true(result.errors.some(error =>
-      error.field === testCase.expectedField &&
-      error.message.includes(testCase.expectedMessage)
-    ), testCase.description);
-  }));
-});
-
-test('validateIssueData handles validation errors gracefully', async (t) => {
-  // Create data with multiple validation errors
-  const multipleErrorsData = {
-    'display-name': '', // Empty string
-    'internal-sgid-table': 'test.table',
-    'arcgis-online-url': 'invalid-url',
-    'sgid-index-id': 'not-a-uuid',
-    'product-page-url-(gis.utah.gov)': 'https://wrong-domain.com'
-  };
-
-  const result = await validateIssueData(multipleErrorsData);
-
-  t.false(result.success);
-  t.true(result.errors.length >= 3); // Should have multiple errors
-
-  // Verify all expected error fields are present
-  const errorFields = result.errors.map(error => error.field);
-  t.true(errorFields.includes('display-name'));
-  t.true(errorFields.includes('arcgis-online-url'));
-  t.true(errorFields.includes('sgid-index-id'));
-});
-
-test('validateIssueData returns proper error structure', async (t) => {
-  const result = await validateIssueData(invalidUrlData);
-
-  t.false(result.success);
-  t.true(Array.isArray(result.errors));
-
-  // Check that each error has the required structure
-  result.errors.forEach(error => {
-    t.true(typeof error.field === 'string');
-    t.true(typeof error.message === 'string');
-    t.true(error.field.length > 0);
-    t.true(error.message.length > 0);
+test('validateAndTransform validates unsuccessfully with empty display name', async (t) => {
+  const result = await validateAndTransform({
+    ...validMinimalData,
+    'display-name': '',
   });
-});
 
-test('validateIssueData accepts valid HTTP URLs', async (t) => {
-  const httpUrlData = {
-    'display-name': 'Test Dataset',
-    'internal-sgid-table': 'test.table',
-    'arcgis-online-url': 'http://example.com', // HTTP instead of HTTPS
-  };
+  const displayNameErrors =
+    (result.errors?.fieldErrors as any)?.['display-name'] ?? [];
 
-  const result = await validateIssueData(httpUrlData);
-
-  // Should pass URL validation (HTTP is valid)
-  t.true(result.success || result.errors.every(error =>
-    !error.message.includes('Must be a valid URL')
-  ));
-});
-
-test('validateIssueData handles undefined values for optional fields', async (t) => {
-  const dataWithUndefined = {
-    'display-name': 'Test Dataset',
-    'internal-sgid-table': 'test.table',
-    'arcgis-online-url': undefined,
-  };
-
-  const result = await validateIssueData(dataWithUndefined);
-
-  // Should handle undefined gracefully for optional fields
-  t.true(result.success);
-  t.is(result.errors.length, 0);
-});
-
-test('validateIssueData fails with null values for string fields', async (t) => {
-  const dataWithNull = {
-    'display-name': 'Test Dataset',
-    'internal-sgid-table': 'test.table',
-    'open-sgid-table': null as any,
-  };
-
-  const result = await validateIssueData(dataWithNull);
-
-  // Should fail because null is not a valid string value
   t.false(result.success);
-  t.true(result.errors.length > 0);
-  t.true(result.errors.some(error =>
-    error.field === 'open-sgid-table' &&
-    error.message.includes('expected string, received null')
-  ));
+  t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
+  t.true(displayNameErrors.includes('A longer display name is required'));
+  t.true(
+    displayNameErrors.includes(
+      "Display name must start with 'Utah' followed by one or more words",
+    ),
+  );
 });
 
-test('validateIssueData ignores extra fields not in schema', async (t) => {
-  const dataWithExtraFields = {
-    'display-name': 'Test Dataset',
-    'internal-sgid-table': 'test.table',
-    'sgid-index-id': '8081a767-ef27-4a17-acb1-88d90c5ed902',
-    'extra-field-1': 'Should be ignored',
-    'another-field': 'Also ignored',
-  };
+test('validateAndTransform validates unsuccessfully with short display name', async (t) => {
+  const result = await validateAndTransform({
+    ...validMinimalData,
+    'display-name': 'Utah',
+  });
 
-  const result = await validateIssueData(dataWithExtraFields);
+  const displayNameErrors =
+    (result.errors?.fieldErrors as any)?.['display-name'] ?? [];
 
-  t.true(result.success);
-  t.is(result.errors.length, 0);
-  // Extra fields should not cause validation to fail
+  t.false(result.success);
+  t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
+  t.true(displayNameErrors.includes('A longer display name is required'));
+  t.true(
+    displayNameErrors.includes(
+      "Display name must start with 'Utah' followed by one or more words",
+    ),
+  );
+});
+
+test('validateAndTransform validates unsuccessfully with invalid display name', async (t) => {
+  const result = await validateAndTransform({
+    ...validMinimalData,
+    'display-name': 'Not Utah Avalanche Paths',
+  });
+
+  t.false(result.success);
+  t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
+  t.is(
+    (result.errors?.fieldErrors as any)?.['display-name']?.[0] ?? '',
+    "Display name must start with 'Utah' followed by one or more words",
+  );
+});
+
+test('validateAndTransform validates unsuccessfully with missing sgid table', async (t) => {
+  const result = await validateAndTransform({
+    ...validCompleteData,
+    'internal-sgid-table': undefined as unknown as string,
+  });
+
+  t.false(result.success);
+  t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
+  t.is(
+    (result.errors?.fieldErrors as any)?.['internal-sgid-table']?.[0] ?? '',
+    'Internal SGID table is required',
+  );
+});
+
+test('validateAndTransform validates unsuccessfully with invalid sgid table', async (t) => {
+  const result = await validateAndTransform({
+    ...validCompleteData,
+    'internal-sgid-table': 'table',
+  });
+
+  t.false(result.success);
+  t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
+  t.is(
+    (result.errors?.fieldErrors as any)?.['internal-sgid-table']?.[0] ?? '',
+    'SGID table name must be in the format "schema.table" with a single period',
+  );
+});
+
+test('validateAndTransform validates unsuccessfully when open sgid table is invalid', async (t) => {
+  const result = await validateAndTransform({
+    ...validMinimalData,
+    'open-sgid-table': 'invalid_table',
+  });
+
+  t.false(result.success);
+  t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
+  t.is(
+    (result.errors?.fieldErrors as any)?.['open-sgid-table']?.[0] ?? '',
+    'Open SGID table name must be in the format "schema.table" with a single period',
+  );
+});
+
+test('validateAndTransform validates unsuccessfully with invalid UUID', async (t) => {
+  const result = await validateAndTransform(invalidUuidData);
+
+  const errors = Object.keys(result.errors?.fieldErrors ?? {});
+
+  t.false(result.success);
+  t.true(Object.keys(result.errors?.fieldErrors ?? {}).length == 2);
+  t.true(errors.includes('sgid-index-id'));
+  t.true(errors.includes('arcgis-online-id'));
+});
+
+test('validateAndTransform validates unsuccessfully with invalid gis.utah.gov url', async (t) => {
+  let result = await validateAndTransform({
+    ...validCompleteData,
+    'product-page-url': 'https://wrong-domain.com',
+  });
+
+  t.false(result.success);
+  t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
+  t.is(
+    (result.errors?.fieldErrors as any)?.['product-page-url']?.[0] ?? '',
+    'Product pages must be from gis.utah.gov',
+  );
+});
+
+test('validateAndTransform transforms unsuccessfully when open sgid table is not found', async (t) => {
+  const result = await validateAndTransform({
+    ...validMinimalData,
+    'open-sgid-table': 'water.non_existent_table',
+  });
+
+  t.true(
+    result.success,
+    'Validation should succeed even with non-existent open SGID table',
+  );
+  t.true(
+    result.data?.discovery.data.some(
+      (row) =>
+        Array.isArray(row) &&
+        row[0] === 'Open SGID' &&
+        row[1] === 'water.non_existent_table' &&
+        row[2] === '❌',
+    ),
+    'Discovery data should indicate the open SGID table does not exist',
+  );
+});
+
+test('validateAndTransform transforms unsuccessfully when open sgid table is not accessible', async (t) => {
+  const previousPassword = process.env.OPEN_SGID_PASSWORD;
+  process.env.OPEN_SGID_PASSWORD = 'wrong-password'; // Simulate inaccessible table
+
+  const result = await validateAndTransform({
+    ...validMinimalData,
+    'open-sgid-table': 'water.non_existent_table',
+  });
+
+  process.env.OPEN_SGID_PASSWORD = previousPassword; // Restore original password
+
+  t.true(
+    result.success,
+    'Validation should succeed even with non-existent open SGID table',
+  );
+  t.true(
+    result.data?.discovery.data.some(
+      (row) =>
+        Array.isArray(row) &&
+        row[0] === 'Open SGID' &&
+        row[1] === 'not accessible' &&
+        row[2] === '❌',
+    ),
+    'Discovery data should indicate the Open SGID is not accessible',
+  );
+});
+
+test('validateAndTransform transforms unsuccessfully when gis.utah.gov page is a redirect', async (t) => {
+  const result = await validateAndTransform({
+    ...validMinimalData,
+    'product-page-url':
+      'https://gis.utah.gov/products/sgid/transportation/uta-commuter-rail-stations/',
+  });
+
+  t.true(result.success, 'Validation should succeed with bad url');
+  t.true(
+    result.data?.discovery.data.some(
+      (row) =>
+        Array.isArray(row) && row[0] === 'gis.utah.gov' && row[2] === '❌',
+    ),
+    'Discovery data should indicate the url is bad',
+  );
+  t.true(
+    result.data?.discovery.warnings.includes(
+      'Product page URL contains redirects - please use the final destination URL',
+    ),
+    'Warning should indicate the product page URL is invalid',
+  );
+});
+
+test('validateAndTransform transforms unsuccessfully when gis.utah.gov page is a 404', async (t) => {
+  const result = await validateAndTransform({
+    ...validMinimalData,
+    'product-page-url':
+      'https://gis.utah.gov/products/sgid/transportation/bad-url/',
+  });
+
+  t.true(result.success, 'Validation should succeed with bad url');
+  t.true(
+    result.data?.discovery.data.some(
+      (row) =>
+        Array.isArray(row) && row[0] === 'gis.utah.gov' && row[2] === '❌',
+    ),
+    'Discovery data should indicate the url is bad',
+  );
+  t.true(
+    result.data?.discovery.warnings.includes(
+      'Product page URL must return a 200 OK status',
+    ),
+    'Warning should indicate the product page URL is invalid',
+  );
+});
+
+test('validateAndTransform transforms unsuccessfully when gis.utah.gov page is a bad', async (t) => {
+  const result = await validateAndTransform({
+    ...validMinimalData,
+    'product-page-url':
+      'https://bad.gis.utah.gov/products/sgid/transportation/bad-url/',
+  });
+
+  t.true(result.success, 'Validation should succeed with bad url');
+  t.true(
+    result.data?.discovery.data.some(
+      (row) =>
+        Array.isArray(row) && row[0] === 'gis.utah.gov' && row[2] === '❌',
+    ),
+    'Discovery data should indicate the url is bad',
+  );
+  t.true(
+    result.data?.discovery.warnings.includes(
+      'Failed to validate Product page URL due to a network error',
+    ),
+    'It catches unknown errors',
+  );
 });

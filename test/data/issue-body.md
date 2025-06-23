@@ -14,15 +14,15 @@ Please consult the utah avalanche center website for current mountain conditions
 
 geosciene.AvalanchePaths
 
-### ArcGIS Online URL
+### ArcGIS Online Id
 
-https://www.arcgis.com/home/item.html?id=0df199cef1704e5287ae675ee3dbd3bd
+0df199cef1704e5287ae675ee3dbd3bd
 
 ### SGID on ArcGIS URL
 
 https://opendata.gis.utah.gov/datasets/utah-avalanche-paths/about
 
-### Product Page URL (gis.utah.gov)
+### Product Page URL
 
 https://gis.utah.gov/products/sgid/geoscience/avalanche-paths/
 
@@ -30,15 +30,15 @@ https://gis.utah.gov/products/sgid/geoscience/avalanche-paths/
 
 geoscience.avalanche_paths
 
-### SGID Index ID
+### SGID Index Id
 
 8081a767-ef27-4a17-acb1-88d90c5ed902
 
 ### Source
 
-- [ ] Manual
+- [x] Manual
 - [ ] Farm from AGOL
-- [x] Other
+- [ ] Other
 
 ### Other Source Details
 

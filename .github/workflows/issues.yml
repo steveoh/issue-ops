@@ -14,69 +14,73 @@ jobs:
   process-issue:
     name: 🔍 Check issue
     runs-on: ubuntu-latest
+    environment:
+      name: prod
     permissions:
       issues: write
       contents: read
 
     steps:
-    - name: ⬇️ Set up code
-      uses: actions/checkout@v4
-      with:
+      - name: ⬇️ Set up code
+        uses: actions/checkout@v4
+        with:
           show-progress: false
 
-    - name: 📦 Setup PNPM
-      uses: pnpm/action-setup@v4
-      with:
-        version: latest
+      - name: 📦 Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
 
-    - name: ⎔ Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-        cache: pnpm
-        cache-dependency-path: pnpm-lock.yaml
+      - name: ⎔ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-    - name: 📥 Download dependencies
-      shell: bash
-      run: pnpm install
+      - name: 📥 Download dependencies
+        shell: bash
+        run: pnpm install --prod
 
-    - name: 🔨 Build TypeScript
-      shell: bash
-      run: pnpm build
+      - name: 🔨 Build TypeScript
+        shell: bash
+        run: pnpm build
 
-    - name: Get issue information
-      id: issue-info
-      run: |
-        if [ "${{ github.event_name }}" = "issues" ]; then
-          echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
-          echo "issue_title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
-          echo "issue_body<<EOF" >> $GITHUB_OUTPUT
-          echo "${{ github.event.issue.body }}" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        else
-          echo "issue_number=${{ github.event.inputs.issue_number }}" >> $GITHUB_OUTPUT
-          # Fetch issue details for manual trigger
-          gh issue view ${{ github.event.inputs.issue_number }} --json title,body --jq '.title' > /tmp/title
-          gh issue view ${{ github.event.inputs.issue_number }} --json title,body --jq '.body' > /tmp/body
-          echo "issue_title=$(cat /tmp/title)" >> $GITHUB_OUTPUT
-          echo "issue_body<<EOF" >> $GITHUB_OUTPUT
-          cat /tmp/body >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get issue information
+        id: issue-info
+        run: |
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+            echo "issue_title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
+            echo "issue_body<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ github.event.issue.body }}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "issue_number=${{ github.event.inputs.issue_number }}" >> $GITHUB_OUTPUT
+            # Fetch issue details for manual trigger
+            gh issue view ${{ github.event.inputs.issue_number }} --json title,body --jq '.title' > /tmp/title
+            gh issue view ${{ github.event.inputs.issue_number }} --json title,body --jq '.body' > /tmp/body
+            echo "issue_title=$(cat /tmp/title)" >> $GITHUB_OUTPUT
+            echo "issue_body<<EOF" >> $GITHUB_OUTPUT
+            cat /tmp/body >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Run processing script
-      run: node lib/src/main.js
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        ISSUE_NUMBER: ${{ steps.issue-info.outputs.issue_number }}
-        ISSUE_TITLE: ${{ steps.issue-info.outputs.issue_title }}
-        ISSUE_BODY: ${{ steps.issue-info.outputs.issue_body }}
+      - name: Run processing script
+        run: node lib/src/main.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
+          OPEN_SGID_PASSWORD: ${{ secrets.OPEN_SGID_PASSWORD }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ steps.issue-info.outputs.issue_number }}
+          ISSUE_TITLE: ${{ steps.issue-info.outputs.issue_title }}
+          ISSUE_BODY: ${{ steps.issue-info.outputs.issue_body }}
 
-    - name: Log processing results
-      run: |
-        echo "✅ Issue processing completed"
-        echo "Issue #${{ steps.issue-info.outputs.issue_number }}: ${{ steps.issue-info.outputs.issue_title }}"
-        echo "Triggered by: ${{ github.event_name }}"
+      - name: Log processing results
+        run: |
+          echo "✅ Issue processing completed"
+          echo "Issue #${{ steps.issue-info.outputs.issue_number }}: ${{ steps.issue-info.outputs.issue_title }}"
+          echo "Triggered by: ${{ github.event_name }}"
