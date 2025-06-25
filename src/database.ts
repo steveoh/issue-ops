@@ -25,7 +25,7 @@ export async function pgTableExists(schema: string, table: string) {
     );
 
     return response.rows[0].exists;
-  } catch (err) {
+  } catch {
     return false;
   } finally {
     await client.end();

@@ -22,9 +22,10 @@
     "clean": "rm -rf lib",
     "dev": "tsx src/main.ts",
     "format": "prettier . --write",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "process-issue": "pnpm build && node lib/main.js",
     "process-issue:dev": "tsx src/main.ts",
-    "test": "pnpm build && c8 ava",
+    "test": "NODE_OPTIONS=--no-deprecation pnpm build && c8 ava",
     "test:watch": "pnpm build && c8 ava --watch"
   },
   "ava": {
@@ -56,8 +57,10 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
+    "@ugrc/eslint-config": "^1.2.2",
     "c8": "^10.1.3",
     "dotenv": "^16.5.0",
+    "eslint": "^9.29.0",
     "prettier": "^3.6.1",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-packagejson": "^2.5.15"

@@ -9,7 +9,7 @@ import {
   JWT,
   UserRefreshClient,
 } from 'google-auth-library';
-import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet';
 import { randomInt } from 'node:crypto';
 
 // Define JSONClient locally since it's not exported from the main module
@@ -20,9 +20,10 @@ type JSONClient =
   | BaseExternalAccountClient
   | Impersonated;
 
-let cachedRows: any[] | undefined;
+let cachedRows: GoogleSpreadsheetRow<RowData>[] | undefined;
 type RowData = {
   id: string;
+  rowNumber?: number;
 };
 
 function retry(client: AxiosInstance) {
@@ -45,7 +46,7 @@ export async function validateSgidIndexId(id: string) {
     return -1;
   }
 
-  return row.rowNumber ?? row._rowNumber ?? -1;
+  return row.rowNumber ?? -1;
 }
 
 async function getWorksheetData() {
@@ -65,7 +66,9 @@ async function getWorksheetData() {
     client = auth.fromJSON(
       JSON.parse(process.env.GOOGLE_PRIVATE_KEY!),
     ) as JSONClient;
-    (client as any).scopes = scopes;
+    if ('scopes' in client) {
+      client.scopes = scopes;
+    }
   } else {
     if (!process.env.NODE_ENV?.includes('test')) {
       console.log(

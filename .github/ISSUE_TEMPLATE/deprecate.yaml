@@ -93,6 +93,16 @@ body:
       description: If "Other" is selected above, please specify what the other source is
       placeholder: e.g., API feed, External database, etc.
 
+  - type: dropdown
+    id: relevance
+    attributes:
+      label: Historic Relevance
+      description: Does this data continue to have historical value (e.g., Census/ACS data or previous tax district boundaries)
+      options:
+        - 'No'
+        - 'Yes'
+      default: 0
+
   - type: input
     id: archives-record-series
     attributes:

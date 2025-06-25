@@ -44,6 +44,10 @@ geoscience.avalanche_paths
 
 none
 
+### Historic Relevance
+
+No
+
 ### Archives Record Series
 
 _No response_

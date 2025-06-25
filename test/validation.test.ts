@@ -1,10 +1,11 @@
 import test from 'ava';
-import type { IssueDataFields } from '../src/main.js';
-import { validateAndTransform } from '../src/main.js';
+import type { IssueDataFields } from '../src/schema.js';
+import { validateAndTransform } from '../src/schema.js';
 
 const validMinimalData = {
   'display-name': 'Utah Avalanche Paths',
   'internal-sgid-table': 'geoscience.AvalanchePaths',
+  'historic-relevance': 'No',
 } as IssueDataFields;
 
 const validCompleteData = {
@@ -17,23 +18,13 @@ const validCompleteData = {
     'https://gis.utah.gov/products/sgid/geoscience/avalanche-paths/',
   'sgid-index-id': '8081a767-ef27-4a17-acb1-88d90c5ed902',
   'archives-record-series': 'Some archive series',
-} as IssueDataFields;
-
-const invalidUrlData = {
-  ...validMinimalData,
-  'sgid-on-arcgis-url': 'https://example.com',
-  'product-page-url': 'https://wrong-domain.com',
+  'historic-relevance': 'No',
 } as IssueDataFields;
 
 const invalidUuidData = {
   ...validMinimalData,
   'sgid-index-id': 'not-a-valid-uuid',
   'arcgis-online-id': 'nota-valid-uuid',
-} as IssueDataFields;
-
-const emptyRequiredData = {
-  'display-name': '',
-  'internal-sgid-table': '',
 } as IssueDataFields;
 
 test('validateAndTransform validates successfully with all valid data', async (t) => {
@@ -48,9 +39,9 @@ test('validateAndTransform validates successfully with all valid data', async (t
 test('validateAndTransform validates successfully with minimal valid data', async (t) => {
   const result = await validateAndTransform(validMinimalData);
 
-  t.true(result.success);
-  t.falsy(result.errors);
-  t.truthy(result.data);
+  t.true(result.success, 'Validation should succeed with minimal valid data');
+  t.falsy(result.errors, 'There should be no validation errors');
+  t.truthy(result.data, 'Data should be transformed successfully');
   t.is(result.data?.displayName, 'Utah Avalanche Paths');
 });
 
@@ -60,8 +51,7 @@ test('validateAndTransform validates unsuccessfully with empty display name', as
     'display-name': '',
   });
 
-  const displayNameErrors =
-    (result.errors?.fieldErrors as any)?.['display-name'] ?? [];
+  const displayNameErrors = result.errors?.fieldErrors?.['display-name'] ?? [];
 
   t.false(result.success);
   t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
@@ -79,8 +69,7 @@ test('validateAndTransform validates unsuccessfully with short display name', as
     'display-name': 'Utah',
   });
 
-  const displayNameErrors =
-    (result.errors?.fieldErrors as any)?.['display-name'] ?? [];
+  const displayNameErrors = result.errors?.fieldErrors?.['display-name'] ?? [];
 
   t.false(result.success);
   t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
@@ -101,7 +90,7 @@ test('validateAndTransform validates unsuccessfully with invalid display name', 
   t.false(result.success);
   t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
   t.is(
-    (result.errors?.fieldErrors as any)?.['display-name']?.[0] ?? '',
+    result.errors?.fieldErrors?.['display-name']?.[0] ?? '',
     "Display name must start with 'Utah' followed by one or more words",
   );
 });
@@ -115,7 +104,7 @@ test('validateAndTransform validates unsuccessfully with missing sgid table', as
   t.false(result.success);
   t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
   t.is(
-    (result.errors?.fieldErrors as any)?.['internal-sgid-table']?.[0] ?? '',
+    result.errors?.fieldErrors?.['internal-sgid-table']?.[0] ?? '',
     'Internal SGID table is required',
   );
 });
@@ -129,7 +118,7 @@ test('validateAndTransform validates unsuccessfully with invalid sgid table', as
   t.false(result.success);
   t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
   t.is(
-    (result.errors?.fieldErrors as any)?.['internal-sgid-table']?.[0] ?? '',
+    result.errors?.fieldErrors?.['internal-sgid-table']?.[0] ?? '',
     'SGID table name must be in the format "schema.table" with a single period',
   );
 });
@@ -143,7 +132,7 @@ test('validateAndTransform validates unsuccessfully when open sgid table is inva
   t.false(result.success);
   t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
   t.is(
-    (result.errors?.fieldErrors as any)?.['open-sgid-table']?.[0] ?? '',
+    result.errors?.fieldErrors?.['open-sgid-table']?.[0] ?? '',
     'Open SGID table name must be in the format "schema.table" with a single period',
   );
 });
@@ -160,7 +149,7 @@ test('validateAndTransform validates unsuccessfully with invalid UUID', async (t
 });
 
 test('validateAndTransform validates unsuccessfully with invalid gis.utah.gov url', async (t) => {
-  let result = await validateAndTransform({
+  const result = await validateAndTransform({
     ...validCompleteData,
     'product-page-url': 'https://wrong-domain.com',
   });
@@ -168,7 +157,7 @@ test('validateAndTransform validates unsuccessfully with invalid gis.utah.gov ur
   t.false(result.success);
   t.true(Object.keys(result.errors?.fieldErrors ?? {}).length > 0);
   t.is(
-    (result.errors?.fieldErrors as any)?.['product-page-url']?.[0] ?? '',
+    result.errors?.fieldErrors?.['product-page-url']?.[0] ?? '',
     'Product pages must be from gis.utah.gov',
   );
 });
@@ -188,7 +177,7 @@ test('validateAndTransform transforms unsuccessfully when open sgid table is not
       (row) =>
         Array.isArray(row) &&
         row[0] === 'Open SGID' &&
-        row[1] === 'water.non_existent_table' &&
+        row[1] === 'Not published' &&
         row[2] === '❌',
     ),
     'Discovery data should indicate the open SGID table does not exist',

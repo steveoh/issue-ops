@@ -9,7 +9,6 @@ const originalProcessExit = process.exit;
 
 // Track process.exit calls
 let processExitCalled = false;
-let exitCode: number | undefined;
 
 // Helper to setup environment variables for testing
 function setupEnv(options: {
@@ -33,12 +32,10 @@ function restoreEnv() {
 
 function setupMocks() {
   processExitCalled = false;
-  exitCode = undefined;
 
   // Mock process.exit
-  (process.exit as any) = (code?: number) => {
+  process.exit = () => {
     processExitCalled = true;
-    exitCode = code;
     // Don't actually exit in tests
     return undefined as never;
   };

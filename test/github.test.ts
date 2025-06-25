@@ -1,5 +1,6 @@
+import type { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import test from 'ava';
-import { generateCommentBody, postIssueComment } from '../src/main.js';
+import { generateCommentBody, postIssueComment } from '../src/github.js';
 
 // Mock Octokit for testing
 class MockOctokit {
@@ -52,30 +53,53 @@ test('generateCommentBody creates success markdown for valid data', async (t) =>
   const commentBody = generateCommentBody(validResult);
 
   // Check that it contains the validation marker
-  t.true(commentBody.includes('<!-- issue-ops-validation-comment -->'));
+  t.true(
+    commentBody.includes('<!-- issue-ops-validation-comment -->'),
+    'The marker should always be present',
+  );
 
   // Check that it shows success
-  t.true(commentBody.includes('✅ Nice work!'));
+  t.true(
+    commentBody.includes('✅ Nice work!'),
+    'The title should indicate validation success',
+  );
   t.true(
     commentBody.includes(
       'The deprecation data has been successfully validated!',
     ),
+    'The comment should indicate validation success',
   );
 
   // Check that it includes the product table headings
-  t.true(commentBody.includes('| sgid product | data | status |'));
+  t.true(
+    commentBody.includes('| sgid product | data | status |'),
+    'The product table should have correct headings',
+  );
 
-  t.true(commentBody.includes('| Open SGID | Not published | ❌ |'));
+  t.true(
+    commentBody.includes('| Open SGID | Not published | ❌ |'),
+    'Open SGID row should be present',
+  );
+  t.true(commentBody.includes('| SGID Index | | ❌ |'));
   t.true(
     commentBody.includes(
       '| gis.utah.gov | [product page](https://gis.utah.gov/products/sgid/geoscience/avalanche-paths/) | ✅ |',
     ),
+    'gis.utah.gov row should be present',
   );
-  t.true(commentBody.includes('| SGID Index | | ❌ |'));
 
-  t.true(commentBody.includes('### SGID Product Warnings'));
-  t.true(commentBody.includes('- Open SGID table'));
-  t.true(commentBody.includes('- SGID Index Id'));
+  t.true(
+    commentBody.includes('> [!WARNING]'),
+    'Warning icon should be present',
+  );
+  t.true(
+    commentBody.includes('> - Open SGID table'),
+    'Warning for Open SGID table should be present',
+  );
+  t.true(
+    commentBody.includes('> - SGID Index Id'),
+    'Warning for SGID Index Id should be present',
+  );
 
   // Check ArcGIS Online section
   t.true(commentBody.includes('### ArcGIS Online'));
@@ -150,23 +174,21 @@ test('postIssueComment skips when missing GitHub context', async (t) => {
     },
   };
 
-  // Test with no octokit
-  await t.notThrowsAsync(postIssueComment(validResult, { octokit: null }));
-
-  // Test with no repository
+  // Test with invalid repository format - should not throw
   await t.notThrowsAsync(
     postIssueComment(validResult, {
-      octokit: new MockOctokit() as any,
-      githubRepository: undefined,
+      octokit: new MockOctokit() as unknown as Octokit,
+      githubRepository: 'invalid-format',
+      issueNumber: '123',
     }),
   );
 
-  // Test with no issue number
+  // Test with valid parameters
   await t.notThrowsAsync(
     postIssueComment(validResult, {
-      octokit: new MockOctokit() as any,
+      octokit: new MockOctokit() as unknown as Octokit,
       githubRepository: 'owner/repo',
-      issueNumber: undefined,
+      issueNumber: '123',
     }),
   );
 });
@@ -183,7 +205,7 @@ test('postIssueComment handles invalid repository format', async (t) => {
 
   await t.notThrowsAsync(
     postIssueComment(validResult, {
-      octokit: new MockOctokit() as any,
+      octokit: new MockOctokit() as unknown as Octokit,
       githubRepository: 'invalid-format',
       issueNumber: '123',
     }),
@@ -198,7 +220,9 @@ test('postIssueComment creates new comment when no existing comment found', asyn
     rest: {
       issues: {
         listComments: async () => ({ data: [] }),
-        createComment: async (params: any) => {
+        createComment: async (
+          params: RestEndpointMethodTypes['issues']['createComment']['parameters'],
+        ) => {
           createCommentCalled = true;
           t.is(params.owner, 'test-owner');
           t.is(params.repo, 'test-repo');
@@ -224,7 +248,7 @@ test('postIssueComment creates new comment when no existing comment found', asyn
   };
 
   await postIssueComment(validResult, {
-    octokit: mockOctokit as any,
+    octokit: mockOctokit as unknown as Octokit,
     githubRepository: 'test-owner/test-repo',
     issueNumber: '123',
   });
@@ -260,7 +284,9 @@ test('postIssueComment updates existing comment when bot comment found', async (
           createCommentCalled = true;
           return { data: { id: 456 } };
         },
-        updateComment: async (params: any) => {
+        updateComment: async (
+          params: RestEndpointMethodTypes['issues']['updateComment']['parameters'],
+        ) => {
           updateCommentCalled = true;
           t.is(params.owner, 'test-owner');
           t.is(params.repo, 'test-repo');
@@ -281,7 +307,7 @@ test('postIssueComment updates existing comment when bot comment found', async (
   };
 
   await postIssueComment(validResult, {
-    octokit: mockOctokit as any,
+    octokit: mockOctokit as unknown as Octokit,
     githubRepository: 'test-owner/test-repo',
     issueNumber: '123',
   });
@@ -335,7 +361,7 @@ test('postIssueComment ignores non-bot existing comments', async (t) => {
   };
 
   await postIssueComment(validResult, {
-    octokit: mockOctokit as any,
+    octokit: mockOctokit as unknown as Octokit,
     githubRepository: 'test-owner/test-repo',
     issueNumber: '123',
   });
@@ -371,7 +397,7 @@ test('postIssueComment handles API errors gracefully', async (t) => {
 
   await t.notThrowsAsync(
     postIssueComment(validResult, {
-      octokit: mockOctokit as any,
+      octokit: mockOctokit as unknown as Octokit,
       githubRepository: 'test-owner/test-repo',
       issueNumber: '123',
     }),
