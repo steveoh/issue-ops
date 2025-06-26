@@ -14,7 +14,7 @@ Please consult the utah avalanche center website for current mountain conditions
 
 geosciene.AvalanchePaths
 
-### ArcGIS Online Id
+### ArcGIS Online Item Id
 
 0df199cef1704e5287ae675ee3dbd3bd
 

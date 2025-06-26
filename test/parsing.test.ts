@@ -12,7 +12,7 @@ const empty = {
   'internal-sgid-table': '',
   'historic-relevance': '',
   'open-sgid-table': undefined,
-  'arcgis-online-id': undefined,
+  'arcgis-online-item-id': undefined,
   'sgid-on-arcgis-url': undefined,
   'product-page-url': undefined,
   'sgid-index-id': undefined,
@@ -44,7 +44,7 @@ test('parseIssueTemplate parses only IssueData fields from issue body correctly'
   // Verify only IssueData interface fields are extracted
   t.is(result['display-name'], 'Utah Avalanche Paths');
   t.is(result['internal-sgid-table'], 'geosciene.AvalanchePaths');
-  t.is(result['arcgis-online-id'], '0df199cef1704e5287ae675ee3dbd3bd');
+  t.is(result['arcgis-online-item-id'], '0df199cef1704e5287ae675ee3dbd3bd');
   t.is(
     result['sgid-on-arcgis-url'],
     'https://opendata.gis.utah.gov/datasets/utah-avalanche-paths/about',
@@ -144,7 +144,7 @@ test('parseIssueTemplate ignores comments and placeholders for IssueData fields'
   t.is(result['sgid-index-id'], 'valid-id-123');
 
   // Should exclude fields with _No response_ or placeholder text
-  t.is(result['arcgis-online-id'], undefined);
+  t.is(result['arcgis-online-item-id'], undefined);
   t.is(result['open-sgid-table'], undefined);
 });
 

@@ -35,7 +35,7 @@ export const ISSUE_DATA_FIELDS = [
   'display-name',
   'internal-sgid-table',
   'open-sgid-table',
-  'arcgis-online-id',
+  'arcgis-online-item-id',
   'sgid-on-arcgis-url',
   'product-page-url',
   'sgid-index-id',
@@ -66,7 +66,7 @@ export const IssueDataSchema = z
         'Open SGID table name must be in the format "schema.table" with a single period',
       )
       .optional(),
-    'arcgis-online-id': z
+    'arcgis-online-item-id': z
       .string('')
       .regex(/^[0-9a-fA-F]{32}$/, 'Must be a valid UUID v4 without hyphens')
       .optional(),
@@ -202,10 +202,10 @@ export const IssueDataSchema = z
       }
     }
 
-    if (data['arcgis-online-id']) {
+    if (data['arcgis-online-item-id']) {
       try {
         const response = await ky.get(
-          `https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-id']}`,
+          `https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-item-id']}`,
           {
             searchParams: { f: 'json' },
             redirect: 'error',
@@ -218,7 +218,7 @@ export const IssueDataSchema = z
           if (itemData && itemData.id) {
             arcgisOnline.data.push([
               'ItemId',
-              `[${data['arcgis-online-id']}](https://www.arcgis.com/home/item.html?id=${data['arcgis-online-id']}?f=json)`,
+              `[${data['arcgis-online-item-id']}](https://www.arcgis.com/home/item.html?id=${data['arcgis-online-item-id']}?f=json)`,
               '✅',
             ]);
 
@@ -230,7 +230,7 @@ export const IssueDataSchema = z
           } else {
             arcgisOnline.data.push([
               'ArcGIS Online',
-              `[${data['arcgis-online-id']}](https://www.arcgis.com/home/item.html?id=${data['arcgis-online-id']}?f=json)`,
+              `[${data['arcgis-online-item-id']}](https://www.arcgis.com/home/item.html?id=${data['arcgis-online-item-id']}?f=json)`,
               '❌',
             ]);
 
@@ -241,7 +241,7 @@ export const IssueDataSchema = z
 
           arcgisOnline.data.push([
             'ItemId',
-            `[${data['arcgis-online-id']}](https://www.arcgis.com/home/item.html?id=${data['arcgis-online-id']}?f=json)`,
+            `[${data['arcgis-online-item-id']}](https://www.arcgis.com/home/item.html?id=${data['arcgis-online-item-id']}?f=json)`,
             '❌',
           ]);
 
@@ -254,7 +254,7 @@ export const IssueDataSchema = z
 
         arcgisOnline.data.push([
           'ItemId',
-          `[${data['arcgis-online-id']}](https://www.arcgis.com/home/item.html?id=${data['arcgis-online-id']}?f=json)`,
+          `[${data['arcgis-online-item-id']}](https://www.arcgis.com/home/item.html?id=${data['arcgis-online-item-id']}?f=json)`,
           '❌',
         ]);
 
@@ -265,7 +265,7 @@ export const IssueDataSchema = z
 
       try {
         const response = await ky.get(
-          `https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-id']}/groups`,
+          `https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-item-id']}/groups`,
           {
             searchParams: { f: 'json' },
             redirect: 'error',
@@ -289,7 +289,7 @@ export const IssueDataSchema = z
 
             arcgisOnline.data.push([
               'Groups',
-              `[${data['arcgis-online-id']}](https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-id']}/groups?f=json)`,
+              `[${data['arcgis-online-item-id']}](https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-item-id']}/groups?f=json)`,
               '❌',
             ]);
 
@@ -300,7 +300,7 @@ export const IssueDataSchema = z
         } else {
           arcgisOnline.data.push([
             'Groups',
-            `[${data['arcgis-online-id']}](https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-id']}/groups?f=json)`,
+            `[${data['arcgis-online-item-id']}](https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-item-id']}/groups?f=json)`,
             '❌',
           ]);
 
@@ -313,7 +313,7 @@ export const IssueDataSchema = z
 
         arcgisOnline.data.push([
           'Groups',
-          `[${data['arcgis-online-id']}](https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-id']}/groups?f=json)`,
+          `[${data['arcgis-online-item-id']}](https://www.arcgis.com/sharing/rest/content/items/${data['arcgis-online-item-id']}/groups?f=json)`,
           '❌',
         ]);
 

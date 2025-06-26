@@ -122,7 +122,7 @@ test('generateCommentBody creates failure markdown for invalid data', async (t) 
         'open-sgid-table': [
           'Open SGID table name must be in the format "schema.table" with a single period',
         ],
-        'arcgis-online-id': ['ArcGIS Online ItemId must be a valid UUID'],
+        'arcgis-online-item-id': ['ArcGIS Online ItemId must be a valid UUID'],
       },
     },
   };
@@ -158,7 +158,7 @@ test('generateCommentBody creates failure markdown for invalid data', async (t) 
   );
   t.true(
     commentBody.includes(
-      '- **arcgis-online-id**: ArcGIS Online ItemId must be a valid UUID',
+      '- **arcgis-online-item-id**: ArcGIS Online ItemId must be a valid UUID',
     ),
     'The list items should be present',
   );

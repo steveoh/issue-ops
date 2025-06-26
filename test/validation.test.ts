@@ -11,7 +11,7 @@ const validMinimalData = {
 const validCompleteData = {
   ...validMinimalData,
   'open-sgid-table': 'geoscience.avalanche_paths',
-  'arcgis-online-id': '0df199cef1704e5287ae675ee3dbd3bd',
+  'arcgis-online-item-id': '0df199cef1704e5287ae675ee3dbd3bd',
   'sgid-on-arcgis-url':
     'https://opendata.gis.utah.gov/datasets/utah-avalanche-paths/about',
   'product-page-url':
@@ -24,7 +24,7 @@ const validCompleteData = {
 const invalidUuidData = {
   ...validMinimalData,
   'sgid-index-id': 'not-a-valid-uuid',
-  'arcgis-online-id': 'nota-valid-uuid',
+  'arcgis-online-item-id': 'nota-valid-uuid',
 } as IssueDataFields;
 
 test('validateAndTransform validates successfully with all valid data', async (t) => {
@@ -145,7 +145,7 @@ test('validateAndTransform validates unsuccessfully with invalid UUID', async (t
   t.false(result.success);
   t.true(Object.keys(result.errors?.fieldErrors ?? {}).length == 2);
   t.true(errors.includes('sgid-index-id'));
-  t.true(errors.includes('arcgis-online-id'));
+  t.true(errors.includes('arcgis-online-item-id'));
 });
 
 test('validateAndTransform validates unsuccessfully with invalid gis.utah.gov url', async (t) => {

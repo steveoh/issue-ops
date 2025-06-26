@@ -6,7 +6,7 @@ export function parseIssueTemplate(lines: string[]): IssueDataFields {
     'internal-sgid-table': '',
     'historic-relevance': '',
     'open-sgid-table': undefined,
-    'arcgis-online-id': undefined,
+    'arcgis-online-item-id': undefined,
     'sgid-on-arcgis-url': undefined,
     'product-page-url': undefined,
     'sgid-index-id': undefined,
