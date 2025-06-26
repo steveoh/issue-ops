@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/rest';
 import { markdownTable } from 'markdown-table';
-import type { ValidationResult } from './schema.js';
+import { isValidationOk, type ValidationResult } from './schema.js';
 import { createDefaultLabels, log, logError } from './utils.js';
 
 export function generateCommentBody(
@@ -9,19 +9,18 @@ export function generateCommentBody(
   const validationMarker = `<!-- issue-ops-validation-comment -->`;
 
   // Determine the main status emoji
-  const statusEmoji = validationResult.success ? '✅' : '❌';
   const statusText = validationResult.success
-    ? 'Nice work!'
-    : 'Validation Failed';
+    ? "Punch that ticket! This request's data is on track. 🎫 🚂🛤️"
+    : "Whistle stop! ✋ This request's data isn't cleared for departure just yet.";
   const statusMessage = validationResult.success
     ? "The deprecation data has been successfully validated! Here's a summary of what I found."
     : 'There were validation errors found.';
 
-  let commentBody = `${validationMarker}\n### ${statusEmoji} ${statusText}\n\n${statusMessage}\n\n`;
+  let commentBody = `${validationMarker}\n### ${statusText}\n\n${statusMessage}\n\n`;
   commentBody +=
     '**Please double check these results and edit your original issue until the results match your expectations and there are no errors.**\n\n';
 
-  if (!validationResult.success && validationResult.errors) {
+  if (!isValidationOk(validationResult) && validationResult.errors) {
     commentBody += '### Input Validation Errors\n\n';
 
     // Top level errors

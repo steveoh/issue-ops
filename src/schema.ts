@@ -358,3 +358,11 @@ export async function validateAndTransform(
     };
   }
 }
+
+export const isValidationOk = (state: ValidationResult) =>
+  state.success && !state.errors;
+
+export const isDiscoveryOk = (state: ValidationResult) =>
+  isValidationOk(state) &&
+  (state?.data?.discovery?.warnings?.length ?? -1) === 0 &&
+  (state?.data?.arcgisOnline?.warnings?.length ?? -1) === 0;

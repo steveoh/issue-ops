@@ -2,7 +2,7 @@
 import { Octokit } from '@octokit/rest';
 import { postIssueComment, setLabels } from './github.js';
 import { parseIssueTemplate } from './parsing.js';
-import { validateAndTransform } from './schema.js';
+import { isDiscoveryOk, validateAndTransform } from './schema.js';
 import { log, logError } from './utils.js';
 
 log('🚀 Starting issue processing...');
@@ -33,6 +33,14 @@ export async function run(): Promise<void> {
       return;
     }
 
+    if (!octokit || !githubRepository) {
+      log(
+        '⚠️ GitHub token or repository not available - skipping GitHub operations',
+      );
+
+      return;
+    }
+
     const data = parseIssueTemplate(issueBody.split('\n'));
 
     log('📊 Parsed issue data:', data);
@@ -40,23 +48,21 @@ export async function run(): Promise<void> {
 
     const result = await validateAndTransform(data);
 
-    if (octokit && githubRepository) {
-      await postIssueComment(result, {
-        octokit,
-        githubRepository,
-        issueNumber,
-      });
-      await setLabels(issueNumber, result, {
-        octokit,
-        githubRepository,
-      });
-    } else {
-      log(
-        '⚠️ GitHub token or repository not available - skipping GitHub operations',
-      );
+    await postIssueComment(result, {
+      octokit,
+      githubRepository,
+      issueNumber,
+    });
+
+    await setLabels(issueNumber, result, {
+      octokit,
+      githubRepository,
+    });
+
+    if (isDiscoveryOk(result)) {
+      // TODO: create soft delete tasks
     }
 
-    log('✅ Issue data validation passed!');
     log('✅ Issue processing completed successfully!');
   } catch (error) {
     const errorMessage =

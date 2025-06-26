@@ -60,7 +60,9 @@ test('generateCommentBody creates success markdown for valid data', async (t) =>
 
   // Check that it shows success
   t.true(
-    commentBody.includes('✅ Nice work!'),
+    commentBody.includes(
+      "Punch that ticket! This request's data is on track. 🎫 🚂🛤️",
+    ),
     'The title should indicate validation success',
   );
   t.true(
@@ -137,7 +139,9 @@ test('generateCommentBody creates failure markdown for invalid data', async (t) 
 
   // Check that it shows failure
   t.true(
-    commentBody.includes('❌ Validation Failed'),
+    commentBody.includes(
+      "Whistle stop! ✋ This request's data isn't cleared for departure just yet.",
+    ),
     'The title should indicate validation failure',
   );
   t.true(

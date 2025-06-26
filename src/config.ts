@@ -30,9 +30,15 @@ export const defaultLabels = [
     description: 'Issue work has been temporarily paused',
   },
   {
-    name: 'status: brown out',
+    name: 'status: soft delete',
     color: '8b4513',
-    description: 'Issue is in 14 day brown out state',
+    description: 'Issue is in 14 day soft delete state',
+  },
+  {
+    name: 'status: soft delete review',
+    color: '8b4513',
+    description:
+      'Soft delete action items are complete, issue is waiting for review from team members',
   },
   {
     name: 'type: full deprecation',
