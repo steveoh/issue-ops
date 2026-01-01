@@ -1,8 +1,8 @@
 import type { IGroup, IItemAdd } from '@esri/arcgis-rest-portal';
 import ky, { type KyResponse } from 'ky';
 import { z } from 'zod/v4';
-import { pgTableExists } from './database.js';
-import { validateSgidIndexId } from './sheets.js';
+import { pgTableExists } from './adapters/postgres-service.js';
+import { validateSgidIndexId } from './adapters/sheets-service.js';
 import { logError } from './utils.js';
 
 type GroupResult = {
