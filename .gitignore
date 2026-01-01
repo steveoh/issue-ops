@@ -1,4 +1,44 @@
-node_modules
-lib
-coverage
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# production
+/lib
+
+# misc
+.DS_Store
+
+# environment variables
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Speckit development tools (keep templates/constitution)
+.specify/scripts/
+.specify/templates/agent-file-template.md
+.specify/templates/checklist-template.md
+
+# AI-specific (not needed by humans)
+.github/agents/
+.github/prompts/
+
+# Working/temporary spec files
+specs/**/tasks.md
+specs/**/research.md
+specs/**/quickstart.md
+specs/**/checklists/
+
+# Progress summaries (keep out of repo for now)
+specs/**/WEEK*.md
+specs/**/WHAT_YOULL_SEE.md
+specs/**/DEPLOYMENT_READY.md

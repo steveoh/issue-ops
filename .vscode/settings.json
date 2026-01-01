@@ -1,11 +1,22 @@
 {
-  "cSpell.words": [
-    "AGOL",
-    "arcgis",
-    "cadastre",
-    "geoscience",
-    "SGID",
-    "UGRC",
-    "uuidv"
-  ]
+    "cSpell.words": [
+        "AGOL",
+        "arcgis",
+        "cadastre",
+        "geoscience",
+        "SGID",
+        "UGRC",
+        "uuidv"
+    ],
+    "chat.promptFilesRecommendations": {
+        "speckit.constitution": true,
+        "speckit.specify": true,
+        "speckit.plan": true,
+        "speckit.tasks": true,
+        "speckit.implement": true
+    },
+    "chat.tools.terminal.autoApprove": {
+        ".specify/scripts/bash/": true,
+        ".specify/scripts/powershell/": true
+    }
 }

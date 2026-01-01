@@ -1,0 +1,275 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/issue-ops/state-schema/v1",
+  "title": "WorkflowState",
+  "description": "State schema for GitHub Issue Operations Management workflows",
+  "type": "object",
+  "required": [
+    "version",
+    "workflowType",
+    "issueNumber",
+    "resourceName",
+    "currentStage",
+    "stageHistory",
+    "createdAt",
+    "updatedAt",
+    "metadata",
+    "featureFlags",
+    "taskIssues",
+    "status"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Schema version for migration support"
+    },
+    "workflowType": {
+      "type": "string",
+      "enum": [
+        "sgid-addition",
+        "sgid-deprecation",
+        "app-addition",
+        "app-deprecation",
+        "internal-sgid-deprecation"
+      ],
+      "description": "Type of workflow"
+    },
+    "issueNumber": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "GitHub issue number for the parent issue"
+    },
+    "resourceName": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of the resource being managed"
+    },
+    "currentStage": {
+      "type": "string",
+      "minLength": 1,
+      "description": "ID of the current workflow stage"
+    },
+    "stageHistory": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/StageHistoryEntry"
+      },
+      "description": "Audit trail of stage transitions"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of workflow initiation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last state update"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Workflow-specific data extracted from issue template"
+    },
+    "featureFlags": {
+      "$ref": "#/definitions/FeatureFlags",
+      "description": "Runtime behavior overrides"
+    },
+    "gracePeriod": {
+      "$ref": "#/definitions/GracePeriod",
+      "description": "Current grace period if workflow is paused"
+    },
+    "taskIssues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TaskIssue"
+      },
+      "description": "Child issues created for task assignments"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "initiated",
+        "in_progress",
+        "paused",
+        "completed",
+        "failed"
+      ],
+      "description": "Overall workflow status"
+    }
+  },
+  "definitions": {
+    "StageHistoryEntry": {
+      "type": "object",
+      "required": [
+        "stageId",
+        "enteredAt",
+        "actor",
+        "event"
+      ],
+      "properties": {
+        "stageId": {
+          "type": "string",
+          "description": "Stage that was entered"
+        },
+        "enteredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of stage entry"
+        },
+        "exitedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of stage exit"
+        },
+        "actor": {
+          "type": "string",
+          "description": "GitHub username who triggered transition"
+        },
+        "event": {
+          "type": "string",
+          "enum": [
+            "task_completed",
+            "manual_approval",
+            "grace_period_expired",
+            "error_occurred",
+            "manual_skip"
+          ],
+          "description": "Event that caused transition"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes about the transition"
+        }
+      }
+    },
+    "GracePeriod": {
+      "type": "object",
+      "required": [
+        "startDate",
+        "durationDays",
+        "reason",
+        "endDate",
+        "canSkip"
+      ],
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when grace period started"
+        },
+        "durationDays": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of days to pause"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Explanation for grace period"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when grace period ends"
+        },
+        "canSkip": {
+          "type": "boolean",
+          "description": "Whether grace period can be manually skipped"
+        }
+      }
+    },
+    "FeatureFlags": {
+      "type": "object",
+      "properties": {
+        "skipGracePeriod": {
+          "type": "boolean",
+          "description": "Override grace period requirements"
+        },
+        "forceManualReview": {
+          "type": "boolean",
+          "description": "Require manual approval even if automatic"
+        },
+        "enableNotifications": {
+          "type": "boolean",
+          "description": "Send email/Slack notifications"
+        },
+        "customAssignee": {
+          "type": "string",
+          "description": "Override default assignee for tasks"
+        },
+        "debugMode": {
+          "type": "boolean",
+          "description": "Enable verbose logging"
+        },
+        "allowConcurrentTasks": {
+          "type": "boolean",
+          "description": "Allow multiple tasks in parallel"
+        },
+        "autoCloseOnComplete": {
+          "type": "boolean",
+          "description": "Automatically close issue when workflow completes"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TaskIssue": {
+      "type": "object",
+      "required": [
+        "issueNumber",
+        "stageId",
+        "title",
+        "assignee",
+        "labels",
+        "createdAt",
+        "status"
+      ],
+      "properties": {
+        "issueNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "GitHub issue number for the task"
+        },
+        "stageId": {
+          "type": "string",
+          "description": "Stage this task belongs to"
+        },
+        "title": {
+          "type": "string",
+          "description": "Task issue title"
+        },
+        "assignee": {
+          "type": "string",
+          "description": "GitHub username assigned to task"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "GitHub labels applied to task"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of task creation"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of task completion"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "created",
+            "in_progress",
+            "completed",
+            "cancelled"
+          ],
+          "description": "Current task status"
+        }
+      }
+    }
+  }
+}
