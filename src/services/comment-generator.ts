@@ -91,8 +91,8 @@ export class CommentGenerator {
       }
     }
 
-    // ArcGIS Online section
-    if (data.arcgisOnline.data.length > 0) {
+    // ArcGIS Online section - only show if has data beyond header
+    if (data.arcgisOnline.data.length > 1) {
       successSection += '### ArcGIS Online\n\n';
       successSection += markdownTable(data.arcgisOnline.data, {
         alignDelimiters: false,
