@@ -92,11 +92,11 @@ const softDeleteStage: Stage = {
 
 ### Tasks:
 - [ ] Delete product page from website
-- [ ] Remove from downloadMetadata
-- [ ] Add redirect from old URL to replacement (if applicable)
+- [ ] Remove from downloadMetadata file
+- [ ] Add redirect from old URL to replacement (manual - determine best redirect location)
 
-### Notes:
-Create a PR in the gis.utah.gov repository to make these changes.`,
+### Repository:
+Create a PR in the [gis.utah.gov repository](https://github.com/agrc/gis.utah.gov) to make these changes.`,
       labels: ['task', 'website', 'soft-delete'],
     },
     {
@@ -134,6 +134,7 @@ Create a PR in the gis.utah.gov repository to make these changes.`,
       body: `## Shelf Decision
 
 **Layer**: {{layerName}}
+**Assigned to**: Data Coordinator (Erik)
 
 ### Question:
 Should this data be shelved (archived for potential future use)?
@@ -142,21 +143,31 @@ Should this data be shelved (archived for potential future use)?
 - [ ] **No** - Data can be permanently deleted
 
 ### Discussion:
-Add comments below with your reasoning. Tag relevant stakeholders.
+1. Add comments below with your reasoning
+2. Tag relevant stakeholders for input
+3. React with 👍 to indicate approval
+4. **Required**: Minimum of [X] 👍 reactions to proceed
 
-Once decided, update this issue with the decision and close.`,
-      labels: ['task', 'decision', 'soft-delete'],
+### Decision Process:
+Once the required approvals are received and decision is documented, close this issue to proceed.
+
+**Note**: This decision affects the hard delete phase. If "Yes", data will be archived; if "No", data will be permanently deleted.`,
+      labels: ['task', 'decision', 'soft-delete', 'approval-required'],
+      assignee: 'erik',  // Will be resolved from config
     },
     {
       title: 'Post Deprecation Tweet for {{layerName}}',
-      body: `## Social Media Notification
+      body: `## Social Media Notification (Optional)
 
 **Layer**: {{layerName}}
+**Assigned to**: @steveoh
 
 ### Tasks:
 - [ ] Post tweet on X (Twitter) announcing deprecation
 - [ ] Include migration guide link
 - [ ] Tag relevant accounts if applicable
+- [ ] **If posted**: Check here → [ ] Tweet posted
+- [ ] **If skipped**: Check here → [ ] Tweet not needed
 
 ### Suggested Tweet:
 \`\`\`
@@ -169,8 +180,9 @@ Once decided, update this issue with the decision and close.`,
 Questions? Contact us at [contact info]
 \`\`\`
 
-**Note**: Mark as complete even if not posting (optional task).`,
-      labels: ['task', 'social-media', 'soft-delete'],
+**Note**: This task is optional. If not posting, mark as "Tweet not needed" and close.`,
+      labels: ['task', 'social-media', 'soft-delete', 'optional'],
+      assignee: 'steveoh',
     },
     {
       title: 'Check and Migrate Known Usages for {{layerName}}',
@@ -180,39 +192,47 @@ Questions? Contact us at [contact info]
 
 ### Check These Systems:
 - [ ] API Search endpoint
+- [ ] Basemaps
 - [ ] Forklift pallet
 - [ ] AGOL FS Queries
 - [ ] Next Gen 911 Aware Map
-- [ ] Basemaps
-- [ ] Other Dependencies (search GitHub org)
+- [ ] Other Dependencies
+
+### How to Check:
+- Search the [GitHub organization](https://github.com/agrc) for "{{layerName}}" or "{{internalSgidTable}}"
+- Check each system manually for references
+- Document findings in comments below
 
 ### For Each Usage Found:
 1. Document the usage location
 2. Update to use replacement layer (if applicable)
 3. Test the migration
-4. Document in comments
+4. Add comment with migration status
 
 ### Verification:
-Once all known usages are migrated or documented, close this issue.`,
+Once all systems are checked and usages migrated or documented, close this issue.`,
       labels: ['task', 'migration', 'soft-delete'],
     },
     {
-      title: 'Update SGID (ArcGIS) Tags and Description for {{layerName}}',
-      body: `## Update SGID Metadata
+      title: 'Update SGID (ArcGIS Server) Tags and Description for {{layerName}}',
+      body: `## Update SGID Feature Service Metadata
 
 **Layer**: {{layerName}}
+**System**: SGID on ArcGIS Server (different from ArcGIS Online)
 
 ### Tasks:
 - [ ] Remove all tags except "Deprecated"
 - [ ] Add migration notes to description:
-  \`\`\`
+  \`\`\`markdown
   This layer has been deprecated.
   
   ${'{'}{{migrationGuide}}
   \`\`\`
 
 ### Notes:
-This affects the SGID feature service on ArcGIS Server.`,
+- This affects the SGID feature service on ArcGIS Server
+- Process is similar to AGOL but uses a different interface
+- Ensure migration notes are in Markdown format`,
       labels: ['task', 'sgid', 'soft-delete'],
     },
   ],
@@ -243,12 +263,18 @@ This affects the SGID feature service on ArcGIS Server.`,
 /**
  * Stage 3: Validate Soft Delete
  * 14-day grace period followed by validation checks
+ * 
+ * Features:
+ * - Automatic 14-day pause (configurable via feature flags)
+ * - Daily countdown update in workflow state comment
+ * - Complaint detection via 🚨 emoji reactions (pauses workflow)
+ * - Validation tasks created after grace period expires
  */
 const validateSoftDeleteStage: Stage = {
   name: 'validate-soft-delete',
   description: '14-day grace period followed by validation of soft delete changes',
   assigneeRole: AssigneeRole.DATA_STEWARD,
-  gracePeriodDays: 14,
+  gracePeriodDays: 14, // Default, can be overridden per issue
   tasks: [
     {
       title: 'Verify AGOL Updates for {{layerName}}',
@@ -309,10 +335,14 @@ Visit the old product page URL and verify redirect or 404.`,
 **Grace Period**: 14 days (completed)
 
 ### Tasks:
-- [ ] Check this issue for comments/complaints
+- [ ] Check this parent issue for comments/complaints
 - [ ] Check email for feedback
 - [ ] Check social media mentions
 - [ ] Check support channels
+
+### Complaint Detection:
+React with 🚨 emoji on any comment that represents a complaint or concern.
+If any 🚨 reactions are found, the workflow will pause for manual review.
 
 ### Assessment:
 - **No complaints**: Proceed with hard delete
