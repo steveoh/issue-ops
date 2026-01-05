@@ -28,8 +28,8 @@ export interface CreateIssueParams {
 export class GitHubService {
   constructor(
     private readonly octokit: Octokit,
-    private readonly owner: string,
-    private readonly repo: string,
+    public readonly owner: string,
+    public readonly repo: string,
   ) {}
 
   /**

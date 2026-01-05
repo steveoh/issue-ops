@@ -144,9 +144,9 @@ export class StateManager {
       comment += '\n';
 
       // List task issues if any
-      if (stageState.taskIssues.length > 0) {
-        stageState.taskIssues.forEach((taskNumber) => {
-          comment += `  - Task #${taskNumber}\n`;
+      if (stageState.taskIssues && stageState.taskIssues.length > 0) {
+        stageState.taskIssues.forEach((task) => {
+          comment += `  - Task #${task.number}: ${task.title} (${task.status})\n`;
         });
       }
     }

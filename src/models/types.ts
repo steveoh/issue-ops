@@ -71,6 +71,8 @@ export enum TransitionEvent {
   GRACE_PERIOD_EXPIRED = 'grace_period_expired',
   /** Manual override/skip by authorized user */
   MANUAL_OVERRIDE = 'manual_override',
+  /** Manual skip of current stage */
+  MANUAL_SKIP = 'manual_skip',
   /** External validation passed */
   VALIDATION_PASSED = 'validation_passed',
   /** Workflow encountered an error */

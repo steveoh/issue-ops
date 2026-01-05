@@ -3,7 +3,9 @@ import {
   TransitionEvent,
   WorkflowStatus,
   WorkflowType,
+  TaskStatus,
 } from './types.js';
+import type { TaskIssue } from './task.js';
 
 /**
  * Complete workflow state - persisted in GitHub issue comment as JSON
@@ -54,8 +56,8 @@ export interface StageState {
   /** GitHub username assigned to this stage (if applicable) */
   assignee?: string;
 
-  /** GitHub issue numbers for tasks created in this stage */
-  taskIssues: number[];
+  /** Task issues created for this stage */
+  taskIssues?: TaskIssue[];
 
   /** ISO 8601 timestamp when stage started */
   startedAt?: string;

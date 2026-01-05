@@ -33,7 +33,7 @@ test('can create valid WorkflowState object', (t) => {
       'deprecation-review': {
         name: 'deprecation-review',
         status: StageStatus.IN_PROGRESS,
-        taskIssues: [124, 125],
+        taskIssues: [],
         startedAt: '2025-12-31T00:00:00Z',
       },
     },
@@ -45,7 +45,7 @@ test('can create valid WorkflowState object', (t) => {
   t.is(state.workflowType, WorkflowType.SGID_DEPRECATION);
   t.is(state.status, WorkflowStatus.ACTIVE);
   t.is(state.stages['deprecation-review']?.status, StageStatus.IN_PROGRESS);
-  t.deepEqual(state.stages['deprecation-review']?.taskIssues, [124, 125]);
+  t.deepEqual(state.stages['deprecation-review']?.taskIssues, []);
 });
 
 test('WorkflowState can include feature flags', (t) => {

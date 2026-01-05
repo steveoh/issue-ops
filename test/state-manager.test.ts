@@ -4,6 +4,8 @@ import { GitHubService } from '../src/adapters/github-service.js';
 import { Octokit } from '@octokit/rest';
 import { WorkflowType, WorkflowStatus, StageStatus } from '../src/models/types.js';
 import type { WorkflowState } from '../src/models/workflow-state.js';
+import type { TaskIssue } from '../src/models/task.js';
+import { TaskStatus } from '../src/models/types.js';
 
 // Mock GitHub service for testing
 class MockGitHubService extends GitHubService {
@@ -55,7 +57,7 @@ const createTestState = (): WorkflowState => ({
     'deprecation-review': {
       name: 'deprecation-review',
       status: StageStatus.IN_PROGRESS,
-      taskIssues: [124, 125],
+      taskIssues: [],
       startedAt: '2025-12-31T00:00:00Z',
     },
     'impact-assessment': {
@@ -160,6 +162,28 @@ test('StateManager renders state with task issues', async (t) => {
   const github = new MockGitHubService();
   const stateManager = new StateManager(github);
   const testState = createTestState();
+
+  // Add task issues to the state
+  testState.stages['deprecation-review']!.taskIssues = [
+    {
+      number: 124,
+      title: 'Review deprecation request',
+      status: TaskStatus.IN_PROGRESS,
+      parentIssue: 123,
+      stage: 'deprecation-review',
+      createdAt: '2025-12-31T00:00:00Z',
+      url: 'https://github.com/test/test/issues/124',
+    },
+    {
+      number: 125,
+      title: 'Update documentation',
+      status: TaskStatus.OPEN,
+      parentIssue: 123,
+      stage: 'deprecation-review',
+      createdAt: '2025-12-31T00:00:00Z',
+      url: 'https://github.com/test/test/issues/125',
+    },
+  ];
 
   await stateManager.saveState(testState);
 
