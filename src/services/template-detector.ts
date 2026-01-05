@@ -32,13 +32,24 @@ export class TemplateDetector {
    * Check if issue is an SGID deprecation request
    */
   private isSgidDeprecation(labels: string[], body: string): boolean {
-    // Check for deprecation label
+    // Check for specific type labels
+    const hasDeprecationType = labels.some((label) =>
+      [
+        'type: full deprecation',
+        'type: internal/open sgid deprecation',
+        'type: full circle deprecation',
+      ].includes(label.toLowerCase()),
+    );
+
+    // Check for workflow label
+    const hasWorkflowLabel = labels.some((label) =>
+      label.toLowerCase().includes('sgid-deprecation'),
+    );
+
+    // Check for general deprecation label
     const hasDeprecationLabel = labels.some((label) =>
       label.toLowerCase().includes('deprecation'),
     );
-
-    // Check for "full deprecation" type label
-    const hasFullDeprecationType = labels.includes('type: full deprecation');
 
     // Check body contains deprecation keywords
     const bodyLower = body.toLowerCase();
@@ -47,10 +58,14 @@ export class TemplateDetector {
       bodyLower.includes('remov') ||
       bodyLower.includes('delet');
 
-    // Must have deprecation label OR (type label AND keywords)
+    // Priority order:
+    // 1. Workflow label (most specific)
+    // 2. Type label (specific deprecation types)
+    // 3. Generic deprecation label + keywords
     return (
-      hasDeprecationLabel ||
-      (hasFullDeprecationType && hasDeprecationKeywords)
+      hasWorkflowLabel ||
+      hasDeprecationType ||
+      (hasDeprecationLabel && hasDeprecationKeywords)
     );
   }
 
