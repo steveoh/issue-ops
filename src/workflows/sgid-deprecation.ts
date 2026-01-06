@@ -73,7 +73,7 @@ const softDeleteStage: Stage = {
 - [AGOL Item](https://www.arcgis.com/home/item.html?id={{agolItemId}})
 
 **Note**: After 24 hours, this item will be unshared from the SGID group.`,
-      labels: ['task', 'agol', 'soft-delete'],
+      labels: ['[ ]', 'agol', 'soft-delete'],
     },
     {
       title: 'Update gis.utah.gov for {{layerName}}',
@@ -89,7 +89,7 @@ const softDeleteStage: Stage = {
 
 ### Repository:
 Create a PR in the [gis.utah.gov repository](https://github.com/agrc/gis.utah.gov) to make these changes.`,
-      labels: ['task', 'website', 'soft-delete'],
+      labels: ['[ ]', 'website', 'soft-delete'],
     },
     {
       title: 'Update SGID Index for {{layerName}}',
@@ -105,7 +105,7 @@ Create a PR in the [gis.utah.gov repository](https://github.com/agrc/gis.utah.go
 
 ### Links:
 - [SGID Index Entry](https://docs.google.com/spreadsheets/d/{{sgidIndexId}})`,
-      labels: ['task', 'sgid-index', 'soft-delete'],
+      labels: ['[ ]', 'sgid-index', 'soft-delete'],
     },
     {
       title: 'Unshare {{layerName}} from SGID Group (After 24 hours)',
@@ -119,7 +119,7 @@ Create a PR in the [gis.utah.gov repository](https://github.com/agrc/gis.utah.go
 - [ ] Unshare item from SGID group
 
 **Important**: Do not complete this until 24 hours have passed since the AGOL item was updated.`,
-      labels: ['task', 'agol', 'soft-delete', 'delayed'],
+      labels: ['[ ]', 'agol', 'soft-delete', 'delayed'],
     },
     {
       title: 'Shelf Decision for {{layerName}}',
@@ -144,7 +144,7 @@ Should this data be shelved (archived for potential future use)?
 Once the required approvals are received and decision is documented, close this issue to proceed.
 
 **Note**: This decision affects the hard delete phase. If "Yes", data will be archived; if "No", data will be permanently deleted.`,
-      labels: ['task', 'decision', 'soft-delete', 'approval-required'],
+      labels: ['[ ]', 'decision', 'soft-delete', 'approval-required'],
       // assignee: '@eneemann'
     },
     {
@@ -173,7 +173,7 @@ Questions? Contact us at [contact info]
 \`\`\`
 
 **Note**: This task is optional. If not posting, mark as "Tweet not needed" and close.`,
-      labels: ['task', 'social-media', 'soft-delete', 'optional'],
+      labels: ['[ ]', 'social-media', 'soft-delete', 'optional'],
       assignee: 'steveoh',
     },
     {
@@ -203,7 +203,7 @@ Questions? Contact us at [contact info]
 
 ### Verification:
 Once all systems are checked and usages migrated or documented, close this issue.`,
-      labels: ['task', 'migration', 'soft-delete'],
+      labels: ['[ ]', 'migration', 'soft-delete'],
     },
     {
       title:
@@ -226,7 +226,7 @@ Once all systems are checked and usages migrated or documented, close this issue
 - This affects the SGID feature service on ArcGIS Server
 - Process is similar to AGOL but uses a different interface
 - Ensure migration notes are in Markdown format`,
-      labels: ['task', 'sgid', 'soft-delete'],
+      labels: ['[ ]', 'sgid', 'soft-delete'],
     },
   ],
   transitions: [
@@ -286,7 +286,7 @@ const validateSoftDeleteStage: Stage = {
 
 ### Links:
 - [AGOL Item](https://www.arcgis.com/home/item.html?id={{agolItemId}})`,
-      labels: ['task', 'verification', 'soft-delete-validation'],
+      labels: ['[ ]', 'verification', 'soft-delete-validation'],
     },
     {
       title: 'Verify Website Changes for {{layerName}}',
@@ -302,7 +302,7 @@ const validateSoftDeleteStage: Stage = {
 
 ### Test:
 Visit the old product page URL and verify redirect or 404.`,
-      labels: ['task', 'verification', 'soft-delete-validation'],
+      labels: ['[ ]', 'verification', 'soft-delete-validation'],
     },
     {
       title: 'Verify SGID Index Updates for {{layerName}}',
@@ -319,7 +319,7 @@ Visit the old product page URL and verify redirect or 404.`,
 
 ### Links:
 - [SGID Index](https://docs.google.com/spreadsheets/d/{{sgidIndexId}})`,
-      labels: ['task', 'verification', 'soft-delete-validation'],
+      labels: ['[ ]', 'verification', 'soft-delete-validation'],
     },
     {
       title: 'Check for Community Complaints about {{layerName}}',
@@ -344,7 +344,7 @@ If any 🚨 reactions are found, the workflow will pause for manual review.
 - **Major complaints**: May need to reconsider deprecation
 
 Add summary of findings in comments below.`,
-      labels: ['task', 'verification', 'soft-delete-validation'],
+      labels: ['[ ]', 'verification', 'soft-delete-validation'],
     },
     {
       title: 'Verify Known Usages Migrated for {{layerName}}',
@@ -360,7 +360,7 @@ Add summary of findings in comments below.`,
 
 ### Notes:
 Review the "Check and Migrate Known Usages" task and verify all items are complete.`,
-      labels: ['task', 'verification', 'soft-delete-validation'],
+      labels: ['[ ]', 'verification', 'soft-delete-validation'],
     },
   ],
   transitions: [
@@ -412,7 +412,7 @@ const hardDeleteStage: Stage = {
 - [AGOL Item](https://www.arcgis.com/home/item.html?id={{agolItemId}})
 
 **Warning**: This action cannot be undone!`,
-      labels: ['task', 'agol', 'hard-delete', 'destructive'],
+      labels: ['[ ]', 'agol', 'hard-delete', 'destructive'],
     },
     {
       title: 'Archive AGOLItems Record for {{layerName}}',
@@ -426,7 +426,7 @@ const hardDeleteStage: Stage = {
 - [ ] Remove row from AGOLItems table
 
 **Note**: This preserves the record while removing it from active tracking.`,
-      labels: ['task', 'database', 'hard-delete'],
+      labels: ['[ ]', 'database', 'hard-delete'],
     },
     {
       title: 'Backup and Remove from Internal SGID for {{layerName}}',
@@ -443,7 +443,7 @@ const hardDeleteStage: Stage = {
 
 ### Backup Location:
 Document the Drive location in comments.`,
-      labels: ['task', 'sgid', 'hard-delete', 'destructive'],
+      labels: ['[ ]', 'sgid', 'hard-delete', 'destructive'],
     },
     {
       title: 'Update SGID Index Flags for {{layerName}}',
@@ -459,7 +459,7 @@ Document the Drive location in comments.`,
 
 ### Links:
 - [SGID Index](https://docs.google.com/spreadsheets/d/{{sgidIndexId}})`,
-      labels: ['task', 'sgid-index', 'hard-delete'],
+      labels: ['[ ]', 'sgid-index', 'hard-delete'],
     },
     {
       title: 'Remove Update Pipeline for {{layerName}}',
@@ -473,7 +473,7 @@ Document the Drive location in comments.`,
 - [ ] Document removal
 
 **Note**: This prevents future data updates from running.`,
-      labels: ['task', 'pipeline', 'hard-delete'],
+      labels: ['[ ]', 'pipeline', 'hard-delete'],
     },
     {
       title: 'Remove from Forklift for {{layerName}}',
@@ -488,7 +488,7 @@ Document the Drive location in comments.`,
 - [ ] Commit changes to Forklift repository
 
 **Note**: This is a manual process in the Forklift system.`,
-      labels: ['task', 'forklift', 'hard-delete'],
+      labels: ['[ ]', 'forklift', 'hard-delete'],
     },
     {
       title: 'Archive and Remove from Archives System for {{layerName}}',
@@ -503,7 +503,7 @@ Document the Drive location in comments.`,
 - [ ] Remove from active record series
 
 **Note**: Ensure archives has the data before removing.`,
-      labels: ['task', 'archives', 'hard-delete'],
+      labels: ['[ ]', 'archives', 'hard-delete'],
     },
     {
       title: 'Delete Google Drive Data for {{layerName}}',
@@ -518,7 +518,7 @@ Document the Drive location in comments.`,
 - [ ] Empty Drive trash
 
 **Warning**: Only complete after Archives confirms receipt!`,
-      labels: ['task', 'drive', 'hard-delete', 'destructive'],
+      labels: ['[ ]', 'drive', 'hard-delete', 'destructive'],
     },
   ],
   transitions: [
@@ -567,7 +567,7 @@ const validateHardDeleteStage: Stage = {
 
 ### Test:
 Try to access the layer via the SGID feature service and verify it's not available.`,
-      labels: ['task', 'verification', 'hard-delete-validation'],
+      labels: ['[ ]', 'verification', 'hard-delete-validation'],
     },
     {
       title: 'Verify Open SGID Removal for {{layerName}}',
@@ -586,7 +586,7 @@ Try to access the layer via the SGID feature service and verify it's not availab
 SELECT * FROM {{openSgidTable}} LIMIT 1;
 \`\`\`
 Should return "relation does not exist" error.`,
-      labels: ['task', 'verification', 'hard-delete-validation'],
+      labels: ['[ ]', 'verification', 'hard-delete-validation'],
     },
     {
       title: 'Verify Internal SGID Removal for {{layerName}}',
@@ -602,7 +602,7 @@ Should return "relation does not exist" error.`,
 
 ### Test:
 Query the database to confirm table doesn't exist.`,
-      labels: ['task', 'verification', 'hard-delete-validation'],
+      labels: ['[ ]', 'verification', 'hard-delete-validation'],
     },
     {
       title: 'Final Checklist for {{layerName}} Deprecation',
@@ -624,7 +624,7 @@ Query the database to confirm table doesn't exist.`,
 Once all items are verified, close this issue to complete the deprecation workflow.
 
 **This will close the parent issue and mark the deprecation as complete.**`,
-      labels: ['task', 'verification', 'hard-delete-validation', 'final'],
+      labels: ['[ ]', 'verification', 'hard-delete-validation', 'final'],
     },
   ],
   transitions: [

@@ -46,8 +46,10 @@ export class TaskManager {
         const title = this.interpolate(template.title, variables);
         const body = this.interpolate(template.body, variables);
 
-        // Add parent reference to body
-        const enhancedBody = `${body}\n\n---\n\n**Parent Issue**: #${parentIssueNumber}\n**Stage**: ${stage}`;
+        // Add parent reference to body with proper formatting
+        // Use list format so GitHub expands the issue reference
+        // The "Tracked in" section creates parent/child relationship in GitHub UI
+        const enhancedBody = `${body}\n\n---\n\n**Tracked in:**\n- #${parentIssueNumber}\n\n**Stage**: ${stage}`;
 
         // Determine assignee (template overrides default)
         const taskAssignee = template.assignee || assignee;
@@ -88,6 +90,9 @@ export class TaskManager {
 
     // Update workflow state with new task issues
     await this.addTasksToState(parentIssueNumber, stage, createdTasks);
+
+    // Add tasks to parent issue body for GitHub's sub-task feature
+    await this.addTasksToParentIssue(parentIssueNumber, stage, createdTasks);
 
     // Post summary comment on parent issue
     await this.postTaskSummary(parentIssueNumber, stage, createdTasks);
@@ -281,22 +286,59 @@ export class TaskManager {
     stage: string,
     tasks: TaskIssue[],
   ): Promise<void> {
-    let comment = `## 📋 Tasks Created for Stage: ${stage}\n\n`;
+    const stageName = stage.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    let comment = `## 📋 Tasks for ${stageName}\n\n`;
 
     if (tasks.length === 0) {
       comment += '_No tasks to complete for this stage._\n';
     } else {
-      comment += 'The following tasks have been created:\n\n';
+      comment += `Complete these ${tasks.length} task${tasks.length > 1 ? 's' : ''} to advance to the next stage:\n\n`;
 
       for (const task of tasks) {
         const assigneeText = task.assignee ? ` (@${task.assignee})` : '';
-        comment += `- [ ] #${task.number} - ${task.title}${assigneeText}\n`;
+        comment += `- [ ] #${task.number}${assigneeText}\n`;
       }
 
-      comment += `\n**Progress**: 0/${tasks.length} completed\n`;
+      comment += `\n_Track progress: 0/${tasks.length} completed_\n`;
     }
 
     await this.github.createComment(parentIssueNumber, comment);
+  }
+
+  /**
+   * Add tasks to parent issue body for GitHub's sub-task tracking
+   * @param parentIssueNumber - Parent issue number
+   * @param stage - Stage name  
+   * @param tasks - Tasks to add
+   */
+  private async addTasksToParentIssue(
+    parentIssueNumber: number,
+    stage: string,
+    tasks: TaskIssue[],
+  ): Promise<void> {
+    if (tasks.length === 0) return;
+
+    try {
+      // Get current issue body
+      const currentBody = await this.github.getIssueBody(parentIssueNumber);
+      
+      // Build task list section
+      const stageName = stage.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      let taskSection = `\n\n## Sub-tasks: ${stageName}\n\n`;
+      
+      for (const task of tasks) {
+        taskSection += `- [ ] #${task.number}\n`;
+      }
+      
+      // Append to issue body
+      const newBody = currentBody + taskSection;
+      await this.github.updateIssueBody(parentIssueNumber, newBody);
+      
+      this.logger.info(`Added ${tasks.length} sub-tasks to parent issue body`);
+    } catch (error) {
+      // Log but don't fail - comment-based tracking still works
+      this.logger.error(`Failed to add tasks to parent issue body: ${error}`);
+    }
   }
 
   /**

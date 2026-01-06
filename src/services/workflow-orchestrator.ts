@@ -85,13 +85,13 @@ export class WorkflowOrchestrator {
     // Save initial state
     await this.stateManager.saveState(initialState);
 
-    // Post initialization comment
-    const stageNames = workflowDef.stages.map((s) => s.name);
-    const comment = this.commentGenerator.generateWorkflowInitComment(
-      workflowDef.name,
-      stageNames,
-    );
-    await this.github.createComment(issueNumber, comment);
+    // Don't post initialization comment - state tracker shows all stages
+    // const stageNames = workflowDef.stages.map((s) => s.name);
+    // const comment = this.commentGenerator.generateWorkflowInitComment(
+    //   workflowDef.name,
+    //   stageNames,
+    // );
+    // await this.github.createComment(issueNumber, comment);
 
     this.logger.info(`Workflow initialized for issue #${issueNumber}`);
     return initialState;

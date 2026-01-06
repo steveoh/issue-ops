@@ -366,6 +366,64 @@ export class GitHubService {
   }
 
   /**
+   * Update an issue's body
+   * @param issueNumber - Issue number
+   * @param body - New body content
+   * @throws GitHubError if update fails
+   */
+  async updateIssueBody(issueNumber: number, body: string): Promise<void> {
+    try {
+      await this.retryWithBackoff(() =>
+        this.octokit.rest.issues.update({
+          owner: this.owner,
+          repo: this.repo,
+          issue_number: issueNumber,
+          body,
+        }),
+      );
+    } catch (error) {
+      const requestError = error as RequestError;
+      throw new GitHubError(
+        `Failed to update issue body: ${requestError.message}`,
+        'updateIssueBody',
+        {
+          issueNumber,
+          status: requestError.status,
+        },
+      );
+    }
+  }
+
+  /**
+   * Get an issue's current body
+   * @param issueNumber - Issue number
+   * @returns Issue body text
+   * @throws GitHubError if get fails
+   */
+  async getIssueBody(issueNumber: number): Promise<string> {
+    try {
+      const response = await this.retryWithBackoff(() =>
+        this.octokit.rest.issues.get({
+          owner: this.owner,
+          repo: this.repo,
+          issue_number: issueNumber,
+        }),
+      );
+      return response.data.body || '';
+    } catch (error) {
+      const requestError = error as RequestError;
+      throw new GitHubError(
+        `Failed to get issue: ${requestError.message}`,
+        'getIssueBody',
+        {
+          issueNumber,
+          status: requestError.status,
+        },
+      );
+    }
+  }
+
+  /**
    * Search for issues using GitHub search syntax
    * @param query - Search query (will be scoped to this repo)
    * @returns Array of issue numbers

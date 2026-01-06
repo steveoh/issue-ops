@@ -86,15 +86,11 @@ export function generateCommentBody(
     }
   }
 
-  // Add next steps for successful validation
+  // Add validation complete message for successful validation
   if (validationResult.success) {
     commentBody += '\n---\n\n';
     commentBody += '## ✅ Validation Complete\n\n';
-    commentBody += 'All required information has been validated. The deprecation workflow will now begin.\n\n';
-    commentBody += '**Next Steps:**\n';
-    commentBody += '- Task issues will be created for the soft-delete phase\n';
-    commentBody += '- Track progress via the workflow state comment below\n';
-    commentBody += '- Complete tasks to advance through the workflow stages\n';
+    commentBody += 'All required information has been validated. The deprecation workflow will now begin.\n';
   }
 
   return commentBody;
