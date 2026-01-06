@@ -113,14 +113,14 @@ export class StateManager {
 
   /**
    * Render workflow state as a formatted comment
-   * Returns only the machine-readable JSON state in an HTML comment
+   * Returns machine-readable JSON state in an HTML comment with minimal visible text
    * @param state - Workflow state to render
    * @returns HTML comment with embedded JSON state
    */
   private renderStateComment(state: WorkflowState): string {
     // Serialize state to JSON and wrap in HTML comment
     const stateJson = JSON.stringify(state, null, 2);
-    return `${this.stateMarker}\n${stateJson}\n-->`;
+    return `${this.stateMarker}\n${stateJson}\n-->\n\n_Workflow state: ${state.workflowType} (${state.status})_`;
   }
 
   /**
