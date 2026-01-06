@@ -220,6 +220,7 @@ export async function run(): Promise<void> {
           migrationGuide: migrationGuide,
           issueNumber: issueNumber,
           reason: deprecationReason,
+          repo: githubRepository, // e.g., "steveoh/issue-ops"
         };
 
         const tasks = await taskManager.createTaskIssues(

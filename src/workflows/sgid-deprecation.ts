@@ -156,21 +156,23 @@ Once the required approvals are received and decision is documented, close this 
 
 ### Tasks:
 - [ ] Post tweet on X (Twitter) announcing deprecation
-- [ ] Include migration guide link
-- [ ] Tag relevant accounts if applicable
+- [ ] Include link to issue
 - [ ] **If posted**: Check here → [ ] Tweet posted
 - [ ] **If skipped**: Check here → [ ] Tweet not needed
 
 ### Suggested Tweet:
 \`\`\`
-📢 SGID Layer Deprecation Notice
+🚮🗑️🚮 Deprecation Notice 🚮🗑️🚮
 
-{{layerName}} is being deprecated.
+{{layerName}}
 
-{{migrationGuide}}
+https://github.com/{{repo}}/issues/{{issueNumber}}
 
-Questions? Contact us at [contact info]
+#utmap #ugrcporter
 \`\`\`
+
+### Migration Guide (if applicable):
+{{migrationGuide}}
 
 **Note**: This task is optional. If not posting, mark as "Tweet not needed" and close.`,
       labels: ['[ ]', 'social-media', 'soft-delete', 'optional'],
@@ -519,6 +521,34 @@ Document the Drive location in comments.`,
 
 **Warning**: Only complete after Archives confirms receipt!`,
       labels: ['[ ]', 'drive', 'hard-delete', 'destructive'],
+    },
+    {
+      title: 'Post Deprecation Complete Tweet for {{layerName}}',
+      body: `## Final Social Media Notification (Optional)
+
+**Layer**: {{layerName}}
+**Assigned to**: @steveoh
+
+### Tasks:
+- [ ] Post tweet on X (Twitter) announcing completion
+- [ ] Include link to issue
+- [ ] **If posted**: Check here → [ ] Tweet posted
+- [ ] **If skipped**: Check here → [ ] Tweet not needed
+
+### Suggested Tweet:
+\`\`\`
+🚮🗑️🚮 Deprecation Complete 🚮🗑️🚮
+
+{{layerName}}
+
+https://github.com/{{repo}}/issues/{{issueNumber}}
+
+#utmap #ugrcporter
+\`\`\`
+
+**Note**: This task is optional. If not posting, mark as "Tweet not needed" and close.`,
+      labels: ['[ ]', 'social-media', 'hard-delete', 'optional'],
+      assignee: 'steveoh',
     },
   ],
   transitions: [
