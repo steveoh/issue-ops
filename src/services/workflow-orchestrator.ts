@@ -255,13 +255,13 @@ export class WorkflowOrchestrator {
 
       await this.stateManager.saveState(state);
 
-      // Post grace period comment
-      const comment = this.commentGenerator.generateStageComment(
-        transition.targetStage,
-        targetStageDef.description,
-        `Grace period: ${targetStageDef.gracePeriodDays} days`,
-      );
-      await this.github.createComment(state.issueNumber, comment);
+      // Don't post automatic stage comment - state tracker shows grace period
+      // const comment = this.commentGenerator.generateStageComment(
+      //   transition.targetStage,
+      //   targetStageDef.description,
+      //   `Grace period: ${targetStageDef.gracePeriodDays} days`,
+      // );
+      // await this.github.createComment(state.issueNumber, comment);
 
       // Add grace period label
       await this.github.addLabels(state.issueNumber, ['paused: grace-period']);
@@ -276,12 +276,12 @@ export class WorkflowOrchestrator {
 
       await this.stateManager.saveState(state);
 
-      // Post stage transition comment
-      const comment = this.commentGenerator.generateStageComment(
-        transition.targetStage,
-        targetStageDef.description,
-      );
-      await this.github.createComment(state.issueNumber, comment);
+      // Don't post automatic stage comment - label shows current stage
+      // const comment = this.commentGenerator.generateStageComment(
+      //   transition.targetStage,
+      //   targetStageDef.description,
+      // );
+      // await this.github.createComment(state.issueNumber, comment);
 
       this.logger.info(`Transitioned to stage: ${transition.targetStage}`);
     }

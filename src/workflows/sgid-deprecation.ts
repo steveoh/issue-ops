@@ -39,12 +39,6 @@ const firstIssueStage: Stage = {
           type: 'add_label',
           payload: { label: 'state: soft delete' },
         },
-        {
-          type: 'post_comment',
-          payload: {
-            body: '## ✅ Validation Complete\n\nAll required information has been validated. Proceeding to soft delete phase.\n\n**Next**: Soft delete tasks will be created.',
-          },
-        },
       ],
     },
   ],
