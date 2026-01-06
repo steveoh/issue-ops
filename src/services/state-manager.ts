@@ -102,9 +102,12 @@ export class StateManager {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      throw new InvalidStateError(`Failed to parse state JSON: ${errorMessage}`, {
-        jsonContent: match[1].substring(0, 200),
-      });
+      throw new InvalidStateError(
+        `Failed to parse state JSON: ${errorMessage}`,
+        {
+          jsonContent: match[1].substring(0, 200),
+        },
+      );
     }
   }
 
@@ -130,7 +133,11 @@ export class StateManager {
     const stageEntries = Object.entries(state.stages);
 
     for (const [stageName, stageState] of stageEntries) {
-      const emoji = this.getStageEmoji(stageName, state.currentStage, stageState.status);
+      const emoji = this.getStageEmoji(
+        stageName,
+        state.currentStage,
+        stageState.status,
+      );
       comment += `${emoji} **${stageName}** - ${stageState.status}`;
 
       if (stageState.startedAt) {
@@ -228,7 +235,11 @@ export class StateManager {
   /**
    * Get emoji for stage based on position and status
    */
-  private getStageEmoji(stageName: string, currentStage: string, status: string): string {
+  private getStageEmoji(
+    stageName: string,
+    currentStage: string,
+    status: string,
+  ): string {
     if (status === 'completed') return '✅';
     if (status === 'blocked') return '⛔';
     if (status === 'skipped') return '⏭️';

@@ -1,6 +1,6 @@
 /**
  * External Service Contracts
- * 
+ *
  * This file defines the interfaces for external service integrations.
  * These contracts abstract the underlying API clients and provide typed interfaces.
  */
@@ -11,10 +11,10 @@
 export interface ExternalService {
   /** Service name for logging and identification */
   name: string;
-  
+
   /** Check if service is healthy and accessible */
   healthCheck(): Promise<boolean>;
-  
+
   /** Execute operation with retry logic */
   withRetry<T>(operation: () => Promise<T>, options?: RetryOptions): Promise<T>;
 }
@@ -25,16 +25,16 @@ export interface ExternalService {
 export interface RetryOptions {
   /** Maximum number of retry attempts */
   maxRetries?: number;
-  
+
   /** Initial delay in milliseconds */
   initialDelayMs?: number;
-  
+
   /** Maximum delay in milliseconds */
   maxDelayMs?: number;
-  
+
   /** Multiplier for exponential backoff */
   backoffMultiplier?: number;
-  
+
   /** Whether to add jitter to delays */
   jitter?: boolean;
 }
@@ -54,7 +54,7 @@ export interface GitHubService extends ExternalService {
     assignees?: string[];
     labels?: string[];
   }): Promise<GitHubIssue>;
-  
+
   /**
    * Get issue details
    */
@@ -63,7 +63,7 @@ export interface GitHubService extends ExternalService {
     repo: string;
     issueNumber: number;
   }): Promise<GitHubIssue>;
-  
+
   /**
    * Update an issue
    */
@@ -76,7 +76,7 @@ export interface GitHubService extends ExternalService {
     state?: 'open' | 'closed';
     labels?: string[];
   }): Promise<GitHubIssue>;
-  
+
   /**
    * Create a comment on an issue
    */
@@ -86,7 +86,7 @@ export interface GitHubService extends ExternalService {
     issueNumber: number;
     body: string;
   }): Promise<GitHubComment>;
-  
+
   /**
    * Update an existing comment
    */
@@ -96,7 +96,7 @@ export interface GitHubService extends ExternalService {
     commentId: number;
     body: string;
   }): Promise<GitHubComment>;
-  
+
   /**
    * List comments on an issue
    */
@@ -105,7 +105,7 @@ export interface GitHubService extends ExternalService {
     repo: string;
     issueNumber: number;
   }): Promise<GitHubComment[]>;
-  
+
   /**
    * Add labels to an issue
    */
@@ -115,7 +115,7 @@ export interface GitHubService extends ExternalService {
     issueNumber: number;
     labels: string[];
   }): Promise<void>;
-  
+
   /**
    * Remove label from an issue
    */
@@ -160,17 +160,13 @@ export interface ArcGISService extends ExternalService {
   /**
    * Verify a layer exists in the portal
    */
-  verifyLayerExists(params: {
-    layerId: string;
-  }): Promise<boolean>;
-  
+  verifyLayerExists(params: { layerId: string }): Promise<boolean>;
+
   /**
    * Get layer metadata
    */
-  getLayerMetadata(params: {
-    layerId: string;
-  }): Promise<ArcGISLayerMetadata>;
-  
+  getLayerMetadata(params: { layerId: string }): Promise<ArcGISLayerMetadata>;
+
   /**
    * Search for layers by name
    */
@@ -178,7 +174,7 @@ export interface ArcGISService extends ExternalService {
     query: string;
     maxResults?: number;
   }): Promise<ArcGISLayerMetadata[]>;
-  
+
   /**
    * Check if user has permission to layer
    */
@@ -207,10 +203,8 @@ export interface GoogleSheetsService extends ExternalService {
   /**
    * Get spreadsheet metadata
    */
-  getSpreadsheet(params: {
-    spreadsheetId: string;
-  }): Promise<GoogleSpreadsheet>;
-  
+  getSpreadsheet(params: { spreadsheetId: string }): Promise<GoogleSpreadsheet>;
+
   /**
    * Read data from a sheet
    */
@@ -219,7 +213,7 @@ export interface GoogleSheetsService extends ExternalService {
     sheetName: string;
     range?: string;
   }): Promise<string[][]>;
-  
+
   /**
    * Write data to a sheet
    */
@@ -229,7 +223,7 @@ export interface GoogleSheetsService extends ExternalService {
     range: string;
     values: string[][];
   }): Promise<void>;
-  
+
   /**
    * Append rows to a sheet
    */
@@ -262,15 +256,12 @@ export interface PostgreSQLService extends ExternalService {
     text: string;
     values?: any[];
   }): Promise<PostgreSQLResult<T>>;
-  
+
   /**
    * Check if a table exists
    */
-  tableExists(params: {
-    tableName: string;
-    schema?: string;
-  }): Promise<boolean>;
-  
+  tableExists(params: { tableName: string; schema?: string }): Promise<boolean>;
+
   /**
    * Get table metadata
    */
@@ -317,7 +308,7 @@ export interface FirestoreService extends ExternalService {
     collection: string;
     documentId: string;
   }): Promise<FirestoreDocument | null>;
-  
+
   /**
    * Set a document (create or update)
    */
@@ -326,7 +317,7 @@ export interface FirestoreService extends ExternalService {
     documentId: string;
     data: any;
   }): Promise<void>;
-  
+
   /**
    * Update a document
    */
@@ -335,7 +326,7 @@ export interface FirestoreService extends ExternalService {
     documentId: string;
     data: Partial<any>;
   }): Promise<void>;
-  
+
   /**
    * Delete a document
    */
@@ -343,7 +334,7 @@ export interface FirestoreService extends ExternalService {
     collection: string;
     documentId: string;
   }): Promise<void>;
-  
+
   /**
    * Query documents
    */
@@ -376,22 +367,34 @@ export interface HTTPClient {
   /**
    * Make a GET request
    */
-  get<T = any>(url: string, options?: HTTPRequestOptions): Promise<HTTPResponse<T>>;
-  
+  get<T = any>(
+    url: string,
+    options?: HTTPRequestOptions,
+  ): Promise<HTTPResponse<T>>;
+
   /**
    * Make a POST request
    */
-  post<T = any>(url: string, options?: HTTPRequestOptions): Promise<HTTPResponse<T>>;
-  
+  post<T = any>(
+    url: string,
+    options?: HTTPRequestOptions,
+  ): Promise<HTTPResponse<T>>;
+
   /**
    * Make a PUT request
    */
-  put<T = any>(url: string, options?: HTTPRequestOptions): Promise<HTTPResponse<T>>;
-  
+  put<T = any>(
+    url: string,
+    options?: HTTPRequestOptions,
+  ): Promise<HTTPResponse<T>>;
+
   /**
    * Make a DELETE request
    */
-  delete<T = any>(url: string, options?: HTTPRequestOptions): Promise<HTTPResponse<T>>;
+  delete<T = any>(
+    url: string,
+    options?: HTTPRequestOptions,
+  ): Promise<HTTPResponse<T>>;
 }
 
 export interface HTTPRequestOptions {

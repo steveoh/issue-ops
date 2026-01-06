@@ -23,7 +23,7 @@ Build a GitHub Action that automates change management for SGID data layers, app
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 Verify compliance with `.specify/memory/constitution.md`:
 
@@ -34,7 +34,7 @@ Verify compliance with `.specify/memory/constitution.md`:
 - [x] **Quality Gates**: Passes type checking, linting, formatting, testing, and build requirements
 - [x] **Complexity Justification**: GitHub Action architecture is simple and stateless; Firestore justifies need for persistent state across workflow runs
 
-*All principles met. GitHub Action pattern with stateless execution per run aligns with constitution goals.*
+_All principles met. GitHub Action pattern with stateless execution per run aligns with constitution goals._
 
 ## Project Structure
 
@@ -85,9 +85,11 @@ No violations. Constitution principles are met with the proposed architecture.
 **Completed**: 2025-12-31
 
 **Artifacts Generated**:
+
 - `research.md` - Technology decisions, patterns, and integration strategies documented
 
 **Key Decisions**:
+
 - GitHub Actions event-driven architecture with stateless execution
 - JSON state in HTML comments for manual intervention support
 - Adapter pattern for external integrations (ArcGIS, Sheets, PostgreSQL)
@@ -99,6 +101,7 @@ No violations. Constitution principles are met with the proposed architecture.
 **Completed**: 2025-12-31
 
 **Artifacts Generated**:
+
 - `data-model.md` - Complete entity definitions, relationships, and state transitions
 - `contracts/service-interfaces.ts` - TypeScript service interface contracts
 - `contracts/state-schema.json` - JSON schema for WorkflowState validation
@@ -107,6 +110,7 @@ No violations. Constitution principles are met with the proposed architecture.
 - `.github/agents/copilot-instructions.md` - Updated with TypeScript, dependencies, and project context
 
 **Design Validation**:
+
 - ✅ All 5 workflow types defined (SGID add/deprecate, app add/deprecate, internal SGID deprecate)
 - ✅ State machine pattern with explicit stage transitions
 - ✅ Task assignment via child GitHub issues
@@ -123,10 +127,11 @@ No violations. Constitution principles are met with the proposed architecture.
 **Next Command**: `/speckit.tasks` to generate `tasks.md` with implementation checklist
 
 **Expected Task Categories**:
+
 1. Core infrastructure (StateManager, WorkflowOrchestrator, TemplateDetector)
 2. Workflow definitions (5 workflow types with stage definitions)
 3. Service adapters (GitHub, Firestore, ArcGIS, Sheets, PostgreSQL)
-4. Issue templates (.github/ISSUE_TEMPLATE/*.yml)
+4. Issue templates (.github/ISSUE_TEMPLATE/\*.yml)
 5. GitHub Action workflow (.github/workflows/issue-ops.yml)
 6. Test suite (unit/integration/contract tests)
 7. Documentation and deployment
@@ -139,6 +144,7 @@ No violations. Constitution principles are met with the proposed architecture.
 **Implementation Plan**: `/Users/steve/dev/clones/issue-ops/specs/001-github-issue-ops/plan.md`
 
 **Generated Artifacts**:
+
 - ✅ `research.md` - Technology research and architectural decisions
 - ✅ `data-model.md` - Complete domain model with entities and state transitions
 - ✅ `contracts/` - TypeScript interfaces and JSON schemas

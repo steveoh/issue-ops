@@ -1,21 +1,24 @@
-import test from 'ava';
-import { TaskManager } from '../src/services/task-manager.js';
-import { StateManager } from '../src/services/state-manager.js';
-import { GitHubService } from '../src/adapters/github-service.js';
-import type { CreateIssueParams } from '../src/adapters/github-service.js';
 import { Octokit } from '@octokit/rest';
+import test from 'ava';
+import type { CreateIssueParams } from '../src/adapters/github-service.js';
+import { GitHubService } from '../src/adapters/github-service.js';
 import {
-  WorkflowType,
-  WorkflowStatus,
   StageStatus,
   TaskStatus,
+  WorkflowStatus,
+  WorkflowType,
 } from '../src/models/types.js';
-import type { WorkflowState } from '../src/models/workflow-state.js';
 import type { TaskTemplate } from '../src/models/workflow-definition.js';
+import type { WorkflowState } from '../src/models/workflow-state.js';
+import { StateManager } from '../src/services/state-manager.js';
+import { TaskManager } from '../src/services/task-manager.js';
 
 // Mock GitHub service
 class MockGitHubService extends GitHubService {
-  private issues = new Map<number, { title: string; body: string; labels: string[]; assignee?: string }>();
+  private issues = new Map<
+    number,
+    { title: string; body: string; labels: string[]; assignee?: string }
+  >();
   private comments: Array<{ issueNumber: number; body: string }> = [];
   private issueCounter = 1000;
 
@@ -26,16 +29,19 @@ class MockGitHubService extends GitHubService {
   override async createIssue(params: CreateIssueParams): Promise<number> {
     const { title, body, labels = [], assignees = [] } = params;
     const issueNumber = this.issueCounter++;
-    this.issues.set(issueNumber, { 
-      title, 
-      body, 
-      labels, 
-      assignee: assignees[0] 
+    this.issues.set(issueNumber, {
+      title,
+      body,
+      labels,
+      assignee: assignees[0],
     });
     return issueNumber;
   }
 
-  override async createComment(issueNumber: number, body: string): Promise<number> {
+  override async createComment(
+    issueNumber: number,
+    body: string,
+  ): Promise<number> {
     this.comments.push({ issueNumber, body });
     return this.comments.length;
   }
@@ -151,18 +157,18 @@ test('createTaskIssues creates issues from templates', async (t) => {
   );
 
   t.is(tasks.length, 2);
-  
+
   // Check first task
   t.is(tasks[0].title, 'Review data quality for TestLayer');
   t.is(tasks[0].assignee, 'reviewer1'); // Template overrides default
   t.is(tasks[0].status, TaskStatus.OPEN);
   t.is(tasks[0].parentIssue, 123);
   t.is(tasks[0].stage, 'review');
-  
+
   // Check second task
   t.is(tasks[1].title, 'Update documentation');
   t.is(tasks[1].assignee, 'default-assignee'); // Uses default
-  
+
   // Verify issues were created
   const issue1 = github.getIssue(tasks[0].number);
   t.truthy(issue1);
@@ -200,7 +206,7 @@ test('createTaskIssues interpolates variables', async (t) => {
   );
 
   t.is(tasks[0].title, 'Process deprecation for MyLayer');
-  
+
   const issue = github.getIssue(tasks[0].number);
   t.true(issue!.body.includes('Details: Remove old layer'));
   t.true(issue!.body.includes('Status: pending'));
@@ -212,11 +218,7 @@ test('createTaskIssues adds tasks to state', async (t) => {
   const state = createTestState(123);
   stateManager.setState(state);
 
-  await taskManager.createTaskIssues(
-    123,
-    'review',
-    testTaskTemplates,
-  );
+  await taskManager.createTaskIssues(123, 'review', testTaskTemplates);
 
   const updatedState = await stateManager.loadState(123);
   t.truthy(updatedState);
@@ -247,7 +249,7 @@ test('areAllTasksCompleted returns true when all tasks done', async (t) => {
   const { taskManager, stateManager } = t.context as any;
 
   const state = createTestState(123);
-  state.stages["review"]!.taskIssues = [
+  state.stages['review']!.taskIssues = [
     {
       number: 1001,
       title: 'Task 1',
@@ -279,7 +281,7 @@ test('areAllTasksCompleted returns false when tasks pending', async (t) => {
   const { taskManager, stateManager } = t.context as any;
 
   const state = createTestState(123);
-  state.stages["review"]!.taskIssues = [
+  state.stages['review']!.taskIssues = [
     {
       number: 1001,
       title: 'Task 1',
@@ -320,7 +322,7 @@ test('updateTaskStatus updates task in state', async (t) => {
   const { taskManager, stateManager } = t.context as any;
 
   const state = createTestState(123);
-  state.stages["review"]!.taskIssues = [
+  state.stages['review']!.taskIssues = [
     {
       number: 1001,
       title: 'Task 1',
@@ -361,7 +363,7 @@ test('getTaskSummary returns accurate summary', async (t) => {
   const { taskManager, stateManager } = t.context as any;
 
   const state = createTestState(123);
-  state.stages["review"]!.taskIssues = [
+  state.stages['review']!.taskIssues = [
     {
       number: 1001,
       title: 'Task 1',

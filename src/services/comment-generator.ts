@@ -139,10 +139,7 @@ export class CommentGenerator {
    * @param stages - Array of stage names
    * @returns Formatted Markdown comment
    */
-  generateWorkflowInitComment(
-    workflowName: string,
-    stages: string[],
-  ): string {
+  generateWorkflowInitComment(workflowName: string, stages: string[]): string {
     const marker = `<!-- issue-ops-workflow-init -->`;
     let comment = `${marker}\n## 🎫 ${workflowName} Workflow Started\n\n`;
     comment += `This issue will progress through the following stages:\n\n`;
@@ -152,7 +149,8 @@ export class CommentGenerator {
       comment += `${index + 1}. ${emoji} ${stage}\n`;
     });
 
-    comment += '\n*The workflow will automatically update as tasks are completed.*\n';
+    comment +=
+      '\n*The workflow will automatically update as tasks are completed.*\n';
 
     return comment;
   }

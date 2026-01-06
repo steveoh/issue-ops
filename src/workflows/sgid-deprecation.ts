@@ -1,20 +1,18 @@
 import {
   AssigneeRole,
-  StageStatus,
   TransitionEvent,
   WorkflowType,
 } from '../models/types.js';
 import type {
   Stage,
-  TaskTemplate,
   WorkflowDefinition,
 } from '../models/workflow-definition.js';
 
 /**
  * SGID Deprecation Workflow Definition
- * 
+ *
  * Complete removal process for SGID layers across all platforms.
- * 
+ *
  * Stages:
  * 1. First Issue - Validate all required information
  * 2. Soft Delete - Modify metadata and hide data
@@ -153,7 +151,7 @@ Once the required approvals are received and decision is documented, close this 
 
 **Note**: This decision affects the hard delete phase. If "Yes", data will be archived; if "No", data will be permanently deleted.`,
       labels: ['task', 'decision', 'soft-delete', 'approval-required'],
-      assignee: 'erik',  // Will be resolved from config
+      // assignee: '@eneemann'
     },
     {
       title: 'Post Deprecation Tweet for {{layerName}}',
@@ -214,7 +212,8 @@ Once all systems are checked and usages migrated or documented, close this issue
       labels: ['task', 'migration', 'soft-delete'],
     },
     {
-      title: 'Update SGID (ArcGIS Server) Tags and Description for {{layerName}}',
+      title:
+        'Update SGID (ArcGIS Server) Tags and Description for {{layerName}}',
       body: `## Update SGID Feature Service Metadata
 
 **Layer**: {{layerName}}
@@ -225,7 +224,7 @@ Once all systems are checked and usages migrated or documented, close this issue
 - [ ] Add migration notes to description:
   \`\`\`markdown
   This layer has been deprecated.
-  
+
   ${'{'}{{migrationGuide}}
   \`\`\`
 
@@ -263,7 +262,7 @@ Once all systems are checked and usages migrated or documented, close this issue
 /**
  * Stage 3: Validate Soft Delete
  * 14-day grace period followed by validation checks
- * 
+ *
  * Features:
  * - Automatic 14-day pause (configurable via feature flags)
  * - Daily countdown update in workflow state comment
@@ -272,7 +271,8 @@ Once all systems are checked and usages migrated or documented, close this issue
  */
 const validateSoftDeleteStage: Stage = {
   name: 'validate-soft-delete',
-  description: '14-day grace period followed by validation of soft delete changes',
+  description:
+    '14-day grace period followed by validation of soft delete changes',
   assigneeRole: AssigneeRole.DATA_STEWARD,
   gracePeriodDays: 14, // Default, can be overridden per issue
   tasks: [

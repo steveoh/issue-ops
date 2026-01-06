@@ -6,8 +6,8 @@ import {
   WorkflowStatus,
   WorkflowType,
 } from '../src/models/types.js';
-import type { WorkflowState } from '../src/models/workflow-state.js';
 import type { WorkflowDefinition } from '../src/models/workflow-definition.js';
+import type { WorkflowState } from '../src/models/workflow-state.js';
 
 test('enum types are defined', (t) => {
   // Just verify enums exist and have expected members
@@ -104,5 +104,3 @@ test('can create valid WorkflowDefinition object', (t) => {
   t.is(workflow.stages[0]?.tasks.length, 1);
   t.is(workflow.stages[0]?.transitions.length, 1);
 });
-
-

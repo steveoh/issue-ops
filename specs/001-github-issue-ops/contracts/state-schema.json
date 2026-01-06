@@ -88,25 +88,14 @@
     },
     "status": {
       "type": "string",
-      "enum": [
-        "initiated",
-        "in_progress",
-        "paused",
-        "completed",
-        "failed"
-      ],
+      "enum": ["initiated", "in_progress", "paused", "completed", "failed"],
       "description": "Overall workflow status"
     }
   },
   "definitions": {
     "StageHistoryEntry": {
       "type": "object",
-      "required": [
-        "stageId",
-        "enteredAt",
-        "actor",
-        "event"
-      ],
+      "required": ["stageId", "enteredAt", "actor", "event"],
       "properties": {
         "stageId": {
           "type": "string",
@@ -145,13 +134,7 @@
     },
     "GracePeriod": {
       "type": "object",
-      "required": [
-        "startDate",
-        "durationDays",
-        "reason",
-        "endDate",
-        "canSkip"
-      ],
+      "required": ["startDate", "durationDays", "reason", "endDate", "canSkip"],
       "properties": {
         "startDate": {
           "type": "string",
@@ -261,12 +244,7 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "created",
-            "in_progress",
-            "completed",
-            "cancelled"
-          ],
+          "enum": ["created", "in_progress", "completed", "cancelled"],
           "description": "Current task status"
         }
       }

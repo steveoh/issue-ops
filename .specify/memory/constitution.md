@@ -1,32 +1,34 @@
-<!--
-=============================================================================
-SYNC IMPACT REPORT - Constitution Update
-=============================================================================
+# <!--
+
+# SYNC IMPACT REPORT - Constitution Update
+
 Version Change: Template → 1.0.0 (Initial ratification)
 
 New Principles:
-  1. Code Quality & Type Safety
-  2. Testing Standards
-  3. User Experience Consistency
-  4. Performance Requirements
+
+1. Code Quality & Type Safety
+2. Testing Standards
+3. User Experience Consistency
+4. Performance Requirements
 
 New Sections:
-  - Quality Gates & Automation
-  - Development Standards
-  - Governance (formalized)
+
+- Quality Gates & Automation
+- Development Standards
+- Governance (formalized)
 
 Templates Status:
-  ✅ plan-template.md - Constitution Check section references this file
-  ✅ spec-template.md - Requirements and success criteria align with principles
-  ✅ tasks-template.md - Testing discipline and structure align with principles
-  ⚠️  checklist-template.md - Generic, no updates required
-  ⚠️  agent-file-template.md - Generic, no updates required
+✅ plan-template.md - Constitution Check section references this file
+✅ spec-template.md - Requirements and success criteria align with principles
+✅ tasks-template.md - Testing discipline and structure align with principles
+⚠️ checklist-template.md - Generic, no updates required
+⚠️ agent-file-template.md - Generic, no updates required
 
 Follow-up Actions:
-  - None. All placeholders filled.
-  - Version 1.0.0 represents initial constitution ratification.
-=============================================================================
--->
+
+- None. All placeholders filled.
+- # Version 1.0.0 represents initial constitution ratification.
+  -->
 
 # Issue-Ops Constitution
 

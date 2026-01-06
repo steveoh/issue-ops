@@ -1,12 +1,12 @@
 /**
  * Workflow Registry
- * 
+ *
  * Central registry for all workflow definitions.
  * Import and export workflow definitions here.
  */
 
-import type { WorkflowDefinition } from '../models/workflow-definition.js';
 import { WorkflowType } from '../models/types.js';
+import type { WorkflowDefinition } from '../models/workflow-definition.js';
 import { sgidDeprecationWorkflow } from './sgid-deprecation.js';
 
 /**
@@ -26,7 +26,9 @@ export const workflows = new Map<WorkflowType, WorkflowDefinition>([
  * @param type - Workflow type
  * @returns Workflow definition or undefined if not found
  */
-export function getWorkflow(type: WorkflowType): WorkflowDefinition | undefined {
+export function getWorkflow(
+  type: WorkflowType,
+): WorkflowDefinition | undefined {
   return workflows.get(type);
 }
 

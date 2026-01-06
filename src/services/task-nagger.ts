@@ -1,6 +1,6 @@
 import type { GitHubService } from '../adapters/github-service.js';
+import { TaskStatus, WorkflowStatus } from '../models/types.js';
 import type { WorkflowState } from '../models/workflow-state.js';
-import { StageStatus, WorkflowStatus, TaskStatus } from '../models/types.js';
 import { Logger } from './logger.js';
 import { StateManager } from './state-manager.js';
 
@@ -33,7 +33,10 @@ export class TaskNagger {
 
     const parts = formatter.formatToParts(date);
     const weekday = parts.find((p) => p.type === 'weekday')?.value;
-    const hour = parseInt(parts.find((p) => p.type === 'hour')?.value || '0', 10);
+    const hour = parseInt(
+      parts.find((p) => p.type === 'hour')?.value || '0',
+      10,
+    );
 
     return weekday === 'Monday' && hour >= 6 && hour < 9;
   }
@@ -63,7 +66,8 @@ export class TaskNagger {
     }
 
     const lastNagDate = new Date(lastNag);
-    const daysSinceNag = (Date.now() - lastNagDate.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceNag =
+      (Date.now() - lastNagDate.getTime()) / (1000 * 60 * 60 * 24);
 
     return daysSinceNag >= 7;
   }
@@ -173,7 +177,8 @@ export class TaskNagger {
       state.featureFlags = {};
     }
     // Store last nag time as a custom property
-    (state.featureFlags as Record<string, unknown>).lastNagTime = new Date().toISOString();
+    (state.featureFlags as Record<string, unknown>).lastNagTime =
+      new Date().toISOString();
     await this.stateManager.saveState(state);
 
     this.logger.info(`Posted nag comment for issue #${issueNumber}`);

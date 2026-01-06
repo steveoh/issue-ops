@@ -198,7 +198,10 @@ test.skip('validateAndTransform transforms unsuccessfully when open sgid table i
   process.env.OPEN_SGID_PASSWORD = previousPassword; // Restore original password
 
   if (process.env.DEBUG) {
-    console.log('Discovery data:', JSON.stringify(result.data?.discovery.data, null, 2));
+    console.log(
+      'Discovery data:',
+      JSON.stringify(result.data?.discovery.data, null, 2),
+    );
   }
 
   t.true(

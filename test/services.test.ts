@@ -1,9 +1,9 @@
 import test from 'ava';
-import { TemplateParser } from '../src/services/template-parser.js';
-import { TemplateDetector } from '../src/services/template-detector.js';
+import { WorkflowType } from '../src/models/types.js';
 import { CommentGenerator } from '../src/services/comment-generator.js';
 import { Logger } from '../src/services/logger.js';
-import { WorkflowType } from '../src/models/types.js';
+import { TemplateDetector } from '../src/services/template-detector.js';
+import { TemplateParser } from '../src/services/template-parser.js';
 
 // Template Parser Tests
 test('TemplateParser is instantiable', (t) => {
@@ -131,7 +131,7 @@ test('Logger is instantiable', (t) => {
 
 test('Logger methods are callable without errors', (t) => {
   const logger = new Logger();
-  
+
   // These should not throw in test mode (silenced)
   t.notThrows(() => logger.info('test'));
   t.notThrows(() => logger.warn('test'));

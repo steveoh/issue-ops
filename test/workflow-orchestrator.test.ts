@@ -1,16 +1,16 @@
-import test from 'ava';
-import { WorkflowOrchestrator } from '../src/services/workflow-orchestrator.js';
-import { StateManager } from '../src/services/state-manager.js';
-import { GitHubService } from '../src/adapters/github-service.js';
 import { Octokit } from '@octokit/rest';
+import test from 'ava';
+import { GitHubService } from '../src/adapters/github-service.js';
 import {
-  WorkflowType,
-  WorkflowStatus,
   StageStatus,
   TransitionEvent,
+  WorkflowStatus,
+  WorkflowType,
 } from '../src/models/types.js';
 import type { WorkflowDefinition } from '../src/models/workflow-definition.js';
 import type { WorkflowState } from '../src/models/workflow-state.js';
+import { StateManager } from '../src/services/state-manager.js';
+import { WorkflowOrchestrator } from '../src/services/workflow-orchestrator.js';
 
 // Mock GitHub service
 class MockGitHubService extends GitHubService {
@@ -21,19 +21,28 @@ class MockGitHubService extends GitHubService {
     super(new Octokit(), 'test-owner', 'test-repo');
   }
 
-  override async createComment(issueNumber: number, body: string): Promise<number> {
+  override async createComment(
+    issueNumber: number,
+    body: string,
+  ): Promise<number> {
     this.comments.push({ issueNumber, body });
     return this.comments.length;
   }
 
-  override async addLabels(issueNumber: number, labels: string[]): Promise<void> {
+  override async addLabels(
+    issueNumber: number,
+    labels: string[],
+  ): Promise<void> {
     if (!this.labels.has(issueNumber)) {
       this.labels.set(issueNumber, new Set());
     }
     labels.forEach((label) => this.labels.get(issueNumber)!.add(label));
   }
 
-  override async removeLabel(issueNumber: number, label: string): Promise<void> {
+  override async removeLabel(
+    issueNumber: number,
+    label: string,
+  ): Promise<void> {
     this.labels.get(issueNumber)?.delete(label);
   }
 
@@ -130,11 +139,9 @@ test('WorkflowOrchestrator is instantiable', (t) => {
 test('initializeWorkflow creates initial state', async (t) => {
   const { orchestrator, stateManager } = t.context as any;
 
-  const state = await orchestrator.initializeWorkflow(
-    123,
-    testWorkflowDef,
-    { 'display-name': 'Test Layer' },
-  );
+  const state = await orchestrator.initializeWorkflow(123, testWorkflowDef, {
+    'display-name': 'Test Layer',
+  });
 
   t.is(state.workflowType, WorkflowType.SGID_DEPRECATION);
   t.is(state.issueNumber, 123);
@@ -213,7 +220,7 @@ test('transitionStage completes workflow when no target stage', async (t) => {
   const { orchestrator, github } = t.context as any;
 
   await orchestrator.initializeWorkflow(123, testWorkflowDef, {});
-  
+
   // Move to approval stage
   await orchestrator.transitionStage(
     123,
@@ -333,12 +340,20 @@ test('canTransition checks if transition is possible', (t) => {
 
   // Valid transition
   t.true(
-    orchestrator.canTransition(state, TransitionEvent.TASK_COMPLETED, testWorkflowDef),
+    orchestrator.canTransition(
+      state,
+      TransitionEvent.TASK_COMPLETED,
+      testWorkflowDef,
+    ),
   );
 
   // Invalid transition
   t.false(
-    orchestrator.canTransition(state, TransitionEvent.GRACE_PERIOD_EXPIRED, testWorkflowDef),
+    orchestrator.canTransition(
+      state,
+      TransitionEvent.GRACE_PERIOD_EXPIRED,
+      testWorkflowDef,
+    ),
   );
 });
 
@@ -388,7 +403,11 @@ test('skipStage returns null if stage cannot be skipped', async (t) => {
 
   await orchestrator.initializeWorkflow(123, testWorkflowDef, {});
 
-  const result = await orchestrator.skipStage(123, testWorkflowDef, 'Trying to skip');
+  const result = await orchestrator.skipStage(
+    123,
+    testWorkflowDef,
+    'Trying to skip',
+  );
 
   t.is(result, null);
 });

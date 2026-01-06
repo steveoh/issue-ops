@@ -82,9 +82,7 @@ export class TemplateDetector {
   private isAppAddition(labels: string[], body: string): boolean {
     const bodyLower = body.toLowerCase();
     return (
-      labels.some((label) =>
-        label.toLowerCase().includes('application'),
-      ) &&
+      labels.some((label) => label.toLowerCase().includes('application')) &&
       (bodyLower.includes('app') ||
         bodyLower.includes('application') ||
         bodyLower.includes('servicenow'))

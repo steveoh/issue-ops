@@ -9,6 +9,7 @@
 ```
 
 This will:
+
 1. Check prerequisites (gh CLI, authentication, build)
 2. Create all required GitHub labels
 3. Optionally create a test issue
@@ -21,11 +22,13 @@ This will:
 Creates all required labels in your GitHub repository.
 
 **Usage:**
+
 ```bash
 ./setup-labels.sh
 ```
 
 **Creates:**
+
 - **Workflow labels**: `deprecation`, `porter`
 - **State labels**: `state: soft delete`, `state: soft delete validation`, `state: hard delete`, `state: hard delete validation`
 - **Status labels**: `status: waiting`, `status: blocked`, `status: in progress`, `status: completed`
@@ -42,11 +45,13 @@ Creates all required labels in your GitHub repository.
 Creates a single test issue with all required fields populated.
 
 **Usage:**
+
 ```bash
 ./create-test-issue.sh
 ```
 
 **What it does:**
+
 - Creates issue with deprecation template
 - Adds labels: `deprecation`, `porter`, `test`
 - Assigns to you (`@me`)
@@ -62,6 +67,7 @@ Creates a single test issue with all required fields populated.
 Multi-purpose tool for managing test issues.
 
 **Usage:**
+
 ```bash
 ./test-issue-helper.sh <command>
 ```
@@ -69,28 +75,37 @@ Multi-purpose tool for managing test issues.
 **Commands:**
 
 #### create
+
 Create a new test issue with timestamp in title.
+
 ```bash
 ./test-issue-helper.sh create
 ```
+
 - Includes timestamp to avoid title conflicts
 - Waits 5 seconds and shows workflow status
 - Shows monitoring commands
 
 #### cleanup
+
 Close all test issues (with `test` label).
+
 ```bash
 ./test-issue-helper.sh cleanup
 ```
+
 - Lists all open test issues
 - Prompts for confirmation
 - Closes with comment "Test complete"
 
 #### status
+
 Show recent GitHub Actions workflow runs.
+
 ```bash
 ./test-issue-helper.sh status
 ```
+
 - Lists last 10 workflow runs
 - Shows run status, conclusion, timing
 - Provides command to view logs
@@ -102,11 +117,13 @@ Show recent GitHub Actions workflow runs.
 Master setup script - runs everything in order.
 
 **Usage:**
+
 ```bash
 ./setup-workflow-test.sh
 ```
 
 **Steps:**
+
 1. ✅ Check prerequisites (gh, auth, build)
 2. 🏷️ Create labels (`setup-labels.sh`)
 3. 🧪 Create test issue (optional)
@@ -127,12 +144,14 @@ Default: `steveoh/issue-ops`
 ## Prerequisites
 
 1. **gh CLI** - GitHub command line tool
+
    ```bash
    brew install gh
    gh auth login
    ```
 
 2. **Node.js** - For running the workflow code
+
    ```bash
    brew install node
    ```
@@ -179,59 +198,72 @@ gh run view --repo steveoh/issue-ops --log
 After creating a test issue, check:
 
 ### 1. GitHub Actions Workflow
+
 ```bash
 gh run list --repo steveoh/issue-ops
 ```
+
 - ✅ Workflow triggered
 - ✅ No errors in logs
 
 ### 2. Issue Comments
+
 ```bash
 gh issue view <number> --repo steveoh/issue-ops
 ```
+
 - ✅ Validation comment posted
 - ✅ Workflow state comment created
 - ✅ Shows "Stage: Soft Delete"
 
 ### 3. Task Issues Created
+
 ```bash
 gh issue list --repo steveoh/issue-ops --label task
 ```
+
 - ✅ 8 task issues created
 - ✅ Titles have interpolated variables (not {{layerName}})
 - ✅ Task bodies have proper content
 - ✅ Links back to parent issue work
 
 ### 4. Labels Applied
+
 ```bash
 gh issue view <number> --repo steveoh/issue-ops --json labels
 ```
+
 - ✅ `state: soft delete` label added
 - ✅ `status: in progress` label added (if applicable)
 
 ## Troubleshooting
 
 ### "Label not found"
+
 ```bash
 ./setup-labels.sh
 ```
 
 ### "Not authenticated"
+
 ```bash
 gh auth login
 ```
 
 ### "Compiled code not found"
+
 ```bash
 npm run build
 ```
 
 ### "Workflow didn't trigger"
+
 - Check if issue has `deprecation` label
 - Check GitHub Actions permissions
 - View workflow file: `.github/workflows/issue-ops.yml`
 
 ### "No tasks created"
+
 - Check GitHub Actions logs
 - Look for errors in workflow execution
 - Verify validation passed
@@ -239,11 +271,13 @@ npm run build
 ## Cleanup
 
 Remove all test issues:
+
 ```bash
 ./test-issue-helper.sh cleanup
 ```
 
 Remove labels (if needed):
+
 ```bash
 gh label delete "test" --repo steveoh/issue-ops --yes
 # Repeat for other labels
@@ -252,6 +286,7 @@ gh label delete "test" --repo steveoh/issue-ops --yes
 ## Examples
 
 ### Quick Test Cycle
+
 ```bash
 # Create and test
 ./test-issue-helper.sh create
@@ -267,6 +302,7 @@ gh run view 123456 --repo steveoh/issue-ops --log
 ```
 
 ### Debug Failed Workflow
+
 ```bash
 # See what failed
 gh run list --repo steveoh/issue-ops

@@ -80,7 +80,11 @@ export class ExternalServiceError extends WorkflowError {
  * Error thrown when GitHub API operation fails
  */
 export class GitHubError extends ExternalServiceError {
-  constructor(message: string, operation: string, context?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    operation: string,
+    context?: Record<string, unknown>,
+  ) {
     super(message, 'GitHub', operation, context);
     this.name = 'GitHubError';
   }

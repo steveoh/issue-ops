@@ -1,8 +1,15 @@
 import type { GitHubService } from '../adapters/github-service.js';
 import { WorkflowError } from '../models/errors.js';
-import type { StageTransition, WorkflowDefinition } from '../models/workflow-definition.js';
-import type { WorkflowState, StageState } from '../models/workflow-state.js';
-import { TransitionEvent, WorkflowStatus, StageStatus } from '../models/types.js';
+import {
+  StageStatus,
+  TransitionEvent,
+  WorkflowStatus,
+} from '../models/types.js';
+import type {
+  StageTransition,
+  WorkflowDefinition,
+} from '../models/workflow-definition.js';
+import type { StageState, WorkflowState } from '../models/workflow-state.js';
 import { CommentGenerator } from './comment-generator.js';
 import { Logger } from './logger.js';
 import { StateManager } from './state-manager.js';
@@ -33,7 +40,9 @@ export class WorkflowOrchestrator {
     workflowDef: WorkflowDefinition,
     data: Record<string, unknown>,
   ): Promise<WorkflowState> {
-    this.logger.info(`Initializing workflow ${workflowDef.type} for issue #${issueNumber}`);
+    this.logger.info(
+      `Initializing workflow ${workflowDef.type} for issue #${issueNumber}`,
+    );
 
     // Create initial state with all stages pending
     const now = new Date().toISOString();
@@ -120,9 +129,7 @@ export class WorkflowOrchestrator {
       state.status === WorkflowStatus.COMPLETED ||
       state.status === WorkflowStatus.CANCELLED
     ) {
-      this.logger.info(
-        `Workflow already ${state.status}, skipping transition`,
-      );
+      this.logger.info(`Workflow already ${state.status}, skipping transition`);
       return null;
     }
 
@@ -236,11 +243,14 @@ export class WorkflowOrchestrator {
     if (targetStageDef.gracePeriodDays) {
       // Start grace period
       const gracePeriodEnd = new Date();
-      gracePeriodEnd.setDate(gracePeriodEnd.getDate() + targetStageDef.gracePeriodDays);
+      gracePeriodEnd.setDate(
+        gracePeriodEnd.getDate() + targetStageDef.gracePeriodDays,
+      );
 
       state.stages[transition.targetStage]!.status = StageStatus.IN_PROGRESS;
       state.stages[transition.targetStage]!.startedAt = now;
-      state.stages[transition.targetStage]!.gracePeriodEndsAt = gracePeriodEnd.toISOString();
+      state.stages[transition.targetStage]!.gracePeriodEndsAt =
+        gracePeriodEnd.toISOString();
       state.status = WorkflowStatus.PAUSED;
 
       await this.stateManager.saveState(state);
@@ -354,7 +364,9 @@ export class WorkflowOrchestrator {
       return false;
     }
 
-    const transition = currentStageDef.transitions.find((t) => t.event === event);
+    const transition = currentStageDef.transitions.find(
+      (t) => t.event === event,
+    );
     if (!transition) {
       return false;
     }

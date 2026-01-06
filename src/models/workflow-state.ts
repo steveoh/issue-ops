@@ -1,11 +1,5 @@
-import {
-  StageStatus,
-  TransitionEvent,
-  WorkflowStatus,
-  WorkflowType,
-  TaskStatus,
-} from './types.js';
 import type { TaskIssue } from './task.js';
+import { StageStatus, WorkflowStatus, WorkflowType } from './types.js';
 
 /**
  * Complete workflow state - persisted in GitHub issue comment as JSON

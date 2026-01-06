@@ -1,10 +1,10 @@
+import { Octokit } from '@octokit/rest';
 import test from 'ava';
-import { PostgresService } from '../src/adapters/postgres-service.js';
-import { SheetsService } from '../src/adapters/sheets-service.js';
-import { HttpClient } from '../src/adapters/http-client.js';
 import { ArcGISService } from '../src/adapters/arcgis-service.js';
 import { GitHubService } from '../src/adapters/github-service.js';
-import { Octokit } from '@octokit/rest';
+import { HttpClient } from '../src/adapters/http-client.js';
+import { PostgresService } from '../src/adapters/postgres-service.js';
+import { SheetsService } from '../src/adapters/sheets-service.js';
 
 test('PostgresService is instantiable', (t) => {
   const service = new PostgresService();
@@ -64,12 +64,13 @@ test('GitHubService is instantiable', (t) => {
 
 test('HttpClient throws errors with proper context', async (t) => {
   const client = new HttpClient();
-  
+
   // Test with invalid URL
   const error = await t.throwsAsync(
-    () => client.head('https://this-domain-definitely-does-not-exist-12345.com'),
-    { instanceOf: Error }
+    () =>
+      client.head('https://this-domain-definitely-does-not-exist-12345.com'),
+    { instanceOf: Error },
   );
-  
+
   t.truthy(error);
 });

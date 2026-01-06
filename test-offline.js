@@ -6,7 +6,6 @@
  */
 
 import { parseIssueTemplate } from './lib/src/parsing.js';
-import { validateAndTransform } from './lib/src/schema.js';
 import { TemplateDetector } from './lib/src/services/template-detector.js';
 import { getWorkflow } from './lib/src/workflows/index.js';
 
@@ -88,7 +87,11 @@ const extractAdditionalField = (fieldName) => {
     if (headerPattern.test(lines[i] || '')) {
       for (let j = i + 1; j < lines.length; j++) {
         const line = lines[j]?.trim() || '';
-        if (line && !line.startsWith('_No response_') && !line.startsWith('###')) {
+        if (
+          line &&
+          !line.startsWith('_No response_') &&
+          !line.startsWith('###')
+        ) {
           return line;
         }
         if (line.startsWith('###')) break;
@@ -101,7 +104,10 @@ const extractAdditionalField = (fieldName) => {
 const deprecationReason = extractAdditionalField('Reasons for Deprecation');
 const migrationGuide = extractAdditionalField('Migration Guide');
 console.log('✅ Additional fields:');
-console.log('   - Deprecation Reason:', deprecationReason.substring(0, 50) + '...');
+console.log(
+  '   - Deprecation Reason:',
+  deprecationReason.substring(0, 50) + '...',
+);
 console.log('   - Migration Guide:', migrationGuide);
 console.log('');
 
@@ -119,22 +125,22 @@ if (workflowDef) {
   console.log(`✅ Workflow loaded: ${workflowDef.name}`);
   console.log(`   - ${workflowDef.stages.length} stages defined`);
   console.log('');
-  
+
   // Show stages
   console.log('📊 Workflow stages:');
   workflowDef.stages.forEach((stage, i) => {
     console.log(`   ${i + 1}. ${stage.name} (${stage.tasks.length} tasks)`);
   });
   console.log('');
-  
+
   // Step 5: Show first stage tasks
   console.log('📝 Step 5: First stage tasks (after validation)...');
-  const firstStage = workflowDef.stages.find(s => s.name === 'soft-delete');
+  const firstStage = workflowDef.stages.find((s) => s.name === 'soft-delete');
   if (firstStage) {
     console.log(`Stage: ${firstStage.name}`);
     console.log(`Tasks: ${firstStage.tasks.length}`);
     console.log('');
-    
+
     // Prepare variables for interpolation
     const variables = {
       layerName: data['display-name'],
@@ -148,13 +154,13 @@ if (workflowDef) {
       issueNumber: '999',
       reason: deprecationReason,
     };
-    
+
     // Show first 3 tasks with interpolation
     console.log('Sample tasks (first 3):');
     firstStage.tasks.slice(0, 3).forEach((task, i) => {
       let title = task.title;
       // Simple interpolation
-      Object.keys(variables).forEach(key => {
+      Object.keys(variables).forEach((key) => {
         title = title.replace(new RegExp(`{{${key}}}`, 'g'), variables[key]);
       });
       console.log(`   ${i + 1}. ${title}`);

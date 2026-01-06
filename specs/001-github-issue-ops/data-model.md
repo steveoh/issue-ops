@@ -15,6 +15,7 @@ This document defines the core entities, relationships, and validation rules for
 Represents the current state of a workflow for a specific issue. Stored as JSON in hidden HTML comments on the parent issue.
 
 **Fields**:
+
 - `version: string` - Schema version for migration support (e.g., "1.0")
 - `workflowType: WorkflowType` - One of: sgid-addition, sgid-deprecation, app-addition, app-deprecation, internal-sgid-deprecation
 - `issueNumber: number` - GitHub issue number for the parent issue
@@ -30,6 +31,7 @@ Represents the current state of a workflow for a specific issue. Stored as JSON 
 - `status: WorkflowStatus` - Overall workflow status
 
 **Validation Rules**:
+
 - `version` must match known schema versions
 - `workflowType` must be one of the five defined types
 - `currentStage` must exist in the workflow definition for `workflowType`
@@ -38,12 +40,14 @@ Represents the current state of a workflow for a specific issue. Stored as JSON 
 - `updatedAt` must be >= `createdAt`
 
 **State Transitions**:
+
 ```
 initiated → in_progress → paused? → in_progress → completed
                                   ↘ failed
 ```
 
 **Relationships**:
+
 - One WorkflowState per GitHub issue (1:1)
 - WorkflowState references multiple TaskIssues (1:N)
 - WorkflowState has one WorkflowDefinition based on type (N:1)
@@ -55,6 +59,7 @@ initiated → in_progress → paused? → in_progress → completed
 Defines the structure and behavior of a workflow type. Stored as TypeScript configuration objects in code.
 
 **Fields**:
+
 - `type: WorkflowType` - Unique identifier for this workflow
 - `name: string` - Human-readable name (e.g., "SGID Addition Request")
 - `description: string` - Brief description of workflow purpose
@@ -65,12 +70,14 @@ Defines the structure and behavior of a workflow type. Stored as TypeScript conf
 - `defaultFeatureFlags: FeatureFlags` - Default flag values
 
 **Validation Rules**:
+
 - `type` must be unique across all workflow definitions
 - `initialStage` must exist in `stages` array
 - All transition source/target stages must exist in `stages`
 - `requiredMetadata` fields must exist in corresponding issue template
 
 **Relationships**:
+
 - WorkflowDefinition has multiple Stages (1:N composition)
 - WorkflowDefinition has multiple StageTransitions (1:N composition)
 - Multiple WorkflowStates reference one WorkflowDefinition (N:1)
@@ -82,6 +89,7 @@ Defines the structure and behavior of a workflow type. Stored as TypeScript conf
 Represents a discrete step in a workflow with specific completion criteria and task assignments.
 
 **Fields**:
+
 - `id: string` - Unique identifier within workflow (e.g., "initial-review")
 - `name: string` - Human-readable stage name (e.g., "Initial Review")
 - `description: string` - Detailed description of stage purpose
@@ -95,6 +103,7 @@ Represents a discrete step in a workflow with specific completion criteria and t
 - `estimatedDurationDays: number` - Expected time to complete stage
 
 **Validation Rules**:
+
 - `id` must be unique within workflow
 - `order` must be unique within workflow
 - `assigneeRole` must map to known role in configuration
@@ -102,6 +111,7 @@ Represents a discrete step in a workflow with specific completion criteria and t
 - `estimatedDurationDays` must be > 0
 
 **Relationships**:
+
 - Stage belongs to one WorkflowDefinition (N:1)
 - Stage can have multiple TaskIssues created for it (1:N)
 
@@ -112,6 +122,7 @@ Represents a discrete step in a workflow with specific completion criteria and t
 Defines a valid transition from one stage to another with conditions.
 
 **Fields**:
+
 - `fromStage: string` - Source stage ID
 - `toStage: string` - Target stage ID
 - `event: TransitionEvent` - Event that triggers transition (task_completed, manual_approval, grace_period_expired)
@@ -119,11 +130,13 @@ Defines a valid transition from one stage to another with conditions.
 - `automatic: boolean` - Whether transition happens automatically or requires manual trigger
 
 **Validation Rules**:
+
 - `fromStage` and `toStage` must exist in parent workflow
 - `fromStage` and `toStage` must be different
 - If `automatic` is true, `event` must be observable by the system
 
 **Relationships**:
+
 - StageTransition belongs to one WorkflowDefinition (N:1)
 - StageTransition references two Stages (N:2)
 
@@ -134,6 +147,7 @@ Defines a valid transition from one stage to another with conditions.
 Represents a child GitHub issue created for task assignment. Stored in WorkflowState and tracked via GitHub API.
 
 **Fields**:
+
 - `issueNumber: number` - GitHub issue number for the task
 - `stageId: string` - Stage this task belongs to
 - `title: string` - Task issue title
@@ -144,12 +158,14 @@ Represents a child GitHub issue created for task assignment. Stored in WorkflowS
 - `status: TaskStatus` - Current task status
 
 **Validation Rules**:
+
 - `issueNumber` must be positive integer
 - `stageId` must match a stage in parent workflow
 - `assignee` must be non-empty string
 - `completedAt` must be >= `createdAt` if present
 
 **Relationships**:
+
 - TaskIssue belongs to one WorkflowState (N:1)
 - TaskIssue belongs to one Stage (N:1)
 - TaskIssue references a GitHub Issue (1:1)
@@ -161,6 +177,7 @@ Represents a child GitHub issue created for task assignment. Stored in WorkflowS
 Audit trail entry for stage transitions. Stored in WorkflowState.
 
 **Fields**:
+
 - `stageId: string` - Stage that was entered
 - `enteredAt: string` - ISO 8601 timestamp of stage entry
 - `exitedAt?: string` - ISO 8601 timestamp of stage exit
@@ -169,12 +186,14 @@ Audit trail entry for stage transitions. Stored in WorkflowState.
 - `notes?: string` - Optional notes about the transition
 
 **Validation Rules**:
+
 - `stageId` must exist in workflow definition
 - `enteredAt` must be valid ISO 8601 timestamp
 - `exitedAt` must be >= `enteredAt` if present
 - `actor` must be non-empty string
 
 **Relationships**:
+
 - StageHistoryEntry belongs to one WorkflowState (N:1)
 - StageHistoryEntry references one Stage (N:1)
 
@@ -185,6 +204,7 @@ Audit trail entry for stage transitions. Stored in WorkflowState.
 Represents a pause in workflow execution for a specified duration.
 
 **Fields**:
+
 - `startDate: string` - ISO 8601 timestamp when grace period started
 - `durationDays: number` - Number of days to pause
 - `reason: string` - Explanation for grace period
@@ -192,12 +212,14 @@ Represents a pause in workflow execution for a specified duration.
 - `canSkip: boolean` - Whether grace period can be manually skipped
 
 **Validation Rules**:
+
 - `startDate` must be valid ISO 8601 timestamp
 - `durationDays` must be > 0
 - `endDate` must equal `startDate` + `durationDays`
 - `reason` must be non-empty string
 
 **Relationships**:
+
 - GracePeriod belongs to one WorkflowState (N:1)
 - GracePeriod associated with one Stage (N:1)
 
@@ -208,6 +230,7 @@ Represents a pause in workflow execution for a specified duration.
 Runtime behavior overrides for workflows. Stored in WorkflowState.
 
 **Fields**:
+
 - `skipGracePeriod?: boolean` - Override grace period requirements
 - `forceManualReview?: boolean` - Require manual approval even if automatic
 - `enableNotifications?: boolean` - Send email/Slack notifications
@@ -217,11 +240,13 @@ Runtime behavior overrides for workflows. Stored in WorkflowState.
 - `autoCloseOnComplete?: boolean` - Automatically close issue when workflow completes
 
 **Validation Rules**:
+
 - All fields are optional
 - Boolean fields must be true/false if present
 - `customAssignee` must be valid GitHub username if present
 
 **Relationships**:
+
 - FeatureFlags embedded in one WorkflowState (1:1 composition)
 
 ---
@@ -231,11 +256,13 @@ Runtime behavior overrides for workflows. Stored in WorkflowState.
 Metadata extracted from GitHub issue template forms. Stored in WorkflowState.metadata.
 
 **Common Fields** (all templates):
+
 - `templateType: WorkflowType` - Which template was used
 - `submitter: string` - GitHub username who created the issue
 - `submittedAt: string` - ISO 8601 timestamp of issue creation
 
 **SGID Addition Specific**:
+
 - `layerName: string` - Name of the spatial data layer
 - `dataSource: string` - Source of the data (internal DB, API, file)
 - `updateFrequency: string` - How often data updates
@@ -244,12 +271,14 @@ Metadata extracted from GitHub issue template forms. Stored in WorkflowState.met
 - `description: string` - Purpose and contents of layer
 
 **SGID Deprecation Specific**:
+
 - `layerName: string` - Name of layer to deprecate
 - `deprecationReason: string` - Why layer is being deprecated
 - `replacementLayer?: string` - Replacement layer if any
 - `stakeholders: string[]` - List of affected users/systems
 
 **Application Addition Specific**:
+
 - `appName: string` - Name of the application
 - `productionUrl: string` - Production URL
 - `developmentUrl: string` - Development URL
@@ -261,6 +290,7 @@ Metadata extracted from GitHub issue template forms. Stored in WorkflowState.met
 - `serviceNowAdded: boolean` - Whether added to ServiceNow portfolio
 
 **Application Deprecation Specific**:
+
 - `appName: string` - Name of application to deprecate
 - `deprecationReason: string` - Why application is being deprecated
 - `activeUsers: number` - Estimated number of active users
@@ -268,17 +298,20 @@ Metadata extracted from GitHub issue template forms. Stored in WorkflowState.met
 - `dataRetention: string` - Data retention requirements
 
 **Internal SGID Deprecation Specific**:
+
 - `layerName: string` - Name of internal layer to deprecate
 - `internalUseOnly: boolean` - Confirm internal-only
 - `deprecationReason: string` - Why deprecating
 
 **Validation Rules**:
+
 - All required fields must be present based on `templateType`
 - Email fields must be valid email format
 - URL fields must be valid HTTP/HTTPS URLs
 - Boolean fields must be true/false
 
 **Relationships**:
+
 - IssueTemplate data embedded in one WorkflowState (1:1 composition)
 
 ---
@@ -286,45 +319,49 @@ Metadata extracted from GitHub issue template forms. Stored in WorkflowState.met
 ## Enumerations
 
 ### WorkflowType
+
 ```typescript
 enum WorkflowType {
   SGID_ADDITION = 'sgid-addition',
   SGID_DEPRECATION = 'sgid-deprecation',
   APP_ADDITION = 'app-addition',
   APP_DEPRECATION = 'app-deprecation',
-  INTERNAL_SGID_DEPRECATION = 'internal-sgid-deprecation'
+  INTERNAL_SGID_DEPRECATION = 'internal-sgid-deprecation',
 }
 ```
 
 ### WorkflowStatus
+
 ```typescript
 enum WorkflowStatus {
   INITIATED = 'initiated',
   IN_PROGRESS = 'in_progress',
   PAUSED = 'paused',
   COMPLETED = 'completed',
-  FAILED = 'failed'
+  FAILED = 'failed',
 }
 ```
 
 ### TaskStatus
+
 ```typescript
 enum TaskStatus {
   CREATED = 'created',
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
 }
 ```
 
 ### TransitionEvent
+
 ```typescript
 enum TransitionEvent {
   TASK_COMPLETED = 'task_completed',
   MANUAL_APPROVAL = 'manual_approval',
   GRACE_PERIOD_EXPIRED = 'grace_period_expired',
   ERROR_OCCURRED = 'error_occurred',
-  MANUAL_SKIP = 'manual_skip'
+  MANUAL_SKIP = 'manual_skip',
 }
 ```
 
@@ -375,6 +412,7 @@ ISSUE_OPS_STATE_V1
 ```
 
 **State Update Process**:
+
 1. Fetch issue comments via GitHub API
 2. Find comment with `ISSUE_OPS_STATE_V1` marker
 3. Parse JSON from comment body
@@ -384,6 +422,7 @@ ISSUE_OPS_STATE_V1
 7. Update comment via GitHub API (or create new comment if first time)
 
 **Concurrency Handling**:
+
 - GitHub API provides ETags for optimistic locking
 - Use comment edit API with ETag to detect concurrent modifications
 - Retry with fresh state if ETag mismatch detected
@@ -398,6 +437,7 @@ For analytics and cross-issue queries, optionally persist state to Firestore:
 **Schema**: Same as WorkflowState
 
 **Indexes**:
+
 - `workflowType` + `status` (for active workflow queries)
 - `createdAt` (for time-based analytics)
 - `currentStage` (for stage distribution reports)
@@ -409,18 +449,19 @@ Schema versioning supports evolution without breaking existing workflows:
 **Version Field**: `state.version` (e.g., "1.0", "1.1", "2.0")
 
 **Migration Function**:
+
 ```typescript
 function migrateState(state: any): WorkflowState {
   switch (state.version) {
-    case "1.0":
+    case '1.0':
       return state as WorkflowState; // Current version
-    case "0.9":
+    case '0.9':
       // Migrate from beta version
       return {
         ...state,
-        version: "1.0",
+        version: '1.0',
         featureFlags: state.featureFlags || {},
-        status: state.status || WorkflowStatus.IN_PROGRESS
+        status: state.status || WorkflowStatus.IN_PROGRESS,
       };
     default:
       throw new Error(`Unsupported state version: ${state.version}`);
@@ -438,18 +479,19 @@ All entities implement validation at these levels:
 4. **Schema**: JSON schema validation for state serialization/deserialization
 
 Example validation function:
+
 ```typescript
 function validateWorkflowState(state: WorkflowState): ValidationResult {
   const errors: string[] = [];
-  
-  if (!state.version) errors.push("version is required");
+
+  if (!state.version) errors.push('version is required');
   if (!Object.values(WorkflowType).includes(state.workflowType)) {
     errors.push(`Invalid workflowType: ${state.workflowType}`);
   }
   if (new Date(state.updatedAt) < new Date(state.createdAt)) {
-    errors.push("updatedAt must be >= createdAt");
+    errors.push('updatedAt must be >= createdAt');
   }
-  
+
   return { valid: errors.length === 0, errors };
 }
 ```

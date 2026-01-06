@@ -1,11 +1,14 @@
-import test from 'ava';
-import { StateManager } from '../src/services/state-manager.js';
-import { GitHubService } from '../src/adapters/github-service.js';
 import { Octokit } from '@octokit/rest';
-import { WorkflowType, WorkflowStatus, StageStatus } from '../src/models/types.js';
+import test from 'ava';
+import { GitHubService } from '../src/adapters/github-service.js';
+import {
+  StageStatus,
+  TaskStatus,
+  WorkflowStatus,
+  WorkflowType,
+} from '../src/models/types.js';
 import type { WorkflowState } from '../src/models/workflow-state.js';
-import type { TaskIssue } from '../src/models/task.js';
-import { TaskStatus } from '../src/models/types.js';
+import { StateManager } from '../src/services/state-manager.js';
 
 // Mock GitHub service for testing
 class MockGitHubService extends GitHubService {
@@ -16,7 +19,10 @@ class MockGitHubService extends GitHubService {
     super(new Octokit(), 'test-owner', 'test-repo');
   }
 
-  override async findBotComment(_issueNumber: number, marker: string): Promise<number | null> {
+  override async findBotComment(
+    _issueNumber: number,
+    marker: string,
+  ): Promise<number | null> {
     for (const [id, body] of this.comments.entries()) {
       if (body.includes(marker)) {
         return id;
@@ -29,7 +35,10 @@ class MockGitHubService extends GitHubService {
     return this.comments.get(commentId) || '';
   }
 
-  override async createComment(_issueNumber: number, body: string): Promise<number> {
+  override async createComment(
+    _issueNumber: number,
+    body: string,
+  ): Promise<number> {
     const id = this.nextCommentId++;
     this.comments.set(id, body);
     return id;
@@ -109,13 +118,19 @@ test('StateManager.saveState updates existing comment', async (t) => {
 
   // Save once
   await stateManager.saveState(testState);
-  const firstCommentId = await github.findBotComment(123, '<!-- issue-ops-state');
+  const firstCommentId = await github.findBotComment(
+    123,
+    '<!-- issue-ops-state',
+  );
 
   // Update state and save again
   testState.status = WorkflowStatus.COMPLETED;
   await stateManager.saveState(testState);
 
-  const secondCommentId = await github.findBotComment(123, '<!-- issue-ops-state');
+  const secondCommentId = await github.findBotComment(
+    123,
+    '<!-- issue-ops-state',
+  );
 
   // Should be same comment, not a new one
   t.is(firstCommentId, secondCommentId);
@@ -151,7 +166,7 @@ test('StateManager.saveState updates timestamp', async (t) => {
   const originalUpdatedAt = testState.updatedAt;
 
   // Wait a bit to ensure timestamp changes
-  await new Promise(resolve => setTimeout(resolve, 10));
+  await new Promise((resolve) => setTimeout(resolve, 10));
 
   await stateManager.saveState(testState);
 
@@ -201,7 +216,8 @@ test('StateManager renders grace period info', async (t) => {
 
   // Add grace period
   if (testState.stages['deprecation-review']) {
-    testState.stages['deprecation-review'].gracePeriodEndsAt = '2026-01-30T00:00:00Z';
+    testState.stages['deprecation-review'].gracePeriodEndsAt =
+      '2026-01-30T00:00:00Z';
   }
 
   await stateManager.saveState(testState);
@@ -242,7 +258,7 @@ test('StateManager validates state on save', async (t) => {
 
   await t.throwsAsync(
     () => stateManager.saveState(testState as WorkflowState),
-    { message: /version is required/ }
+    { message: /version is required/ },
   );
 });
 
@@ -251,15 +267,11 @@ test('StateManager throws on invalid JSON in comment', async (t) => {
   const stateManager = new StateManager(github);
 
   // Manually create comment with invalid JSON
-  await github.createComment(
-    123,
-    '<!-- issue-ops-state\n{invalid json}\n-->'
-  );
+  await github.createComment(123, '<!-- issue-ops-state\n{invalid json}\n-->');
 
-  await t.throwsAsync(
-    () => stateManager.loadState(123),
-    { message: /Failed to parse state JSON/ }
-  );
+  await t.throwsAsync(() => stateManager.loadState(123), {
+    message: /Failed to parse state JSON/,
+  });
 });
 
 test('StateManager includes stage emojis based on status', async (t) => {
