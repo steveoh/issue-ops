@@ -113,67 +113,14 @@ export class StateManager {
 
   /**
    * Render workflow state as a formatted comment
-   * Includes both human-readable progress and machine-readable JSON
+   * Returns only the machine-readable JSON state in an HTML comment
    * @param state - Workflow state to render
-   * @returns Formatted Markdown comment with embedded JSON
+   * @returns HTML comment with embedded JSON state
    */
   private renderStateComment(state: WorkflowState): string {
-    // Serialize state to JSON
+    // Serialize state to JSON and wrap in HTML comment
     const stateJson = JSON.stringify(state, null, 2);
-
-    // Build human-readable progress section
-    let comment = `${this.stateMarker}\n${stateJson}\n-->\n\n`;
-    comment += `## 🚂 Workflow Progress\n\n`;
-    comment += `**Type**: ${state.workflowType}\n`;
-    comment += `**Status**: ${this.formatStatus(state.status)}\n`;
-    comment += `**Current Stage**: ${state.currentStage}\n\n`;
-
-    // Add stage progress
-    comment += `### Stages\n\n`;
-    const stageEntries = Object.entries(state.stages);
-
-    for (const [stageName, stageState] of stageEntries) {
-      const emoji = this.getStageEmoji(
-        stageName,
-        state.currentStage,
-        stageState.status,
-      );
-      comment += `${emoji} **${stageName}** - ${stageState.status}`;
-
-      if (stageState.startedAt) {
-        comment += ` (started ${this.formatDate(stageState.startedAt)})`;
-      }
-
-      if (stageState.completedAt) {
-        comment += ` (completed ${this.formatDate(stageState.completedAt)})`;
-      }
-
-      comment += '\n';
-
-      // List task issues if any
-      if (stageState.taskIssues && stageState.taskIssues.length > 0) {
-        stageState.taskIssues.forEach((task) => {
-          comment += `  - Task #${task.number}: ${task.title} (${task.status})\n`;
-        });
-      }
-    }
-
-    comment += '\n';
-
-    // Add grace period info if applicable
-    const currentStageState = state.stages[state.currentStage];
-    if (currentStageState?.gracePeriodEndsAt) {
-      comment += `\n⏰ **Grace Period**: Ends ${this.formatDate(currentStageState.gracePeriodEndsAt)}\n`;
-    }
-
-    // Add feature flags if any
-    if (state.featureFlags && Object.keys(state.featureFlags).length > 0) {
-      comment += `\n🚩 **Feature Flags**: ${JSON.stringify(state.featureFlags)}\n`;
-    }
-
-    comment += `\n_Last updated: ${this.formatDate(state.updatedAt)}_\n`;
-
-    return comment;
+    return `${this.stateMarker}\n${stateJson}\n-->`;
   }
 
   /**
