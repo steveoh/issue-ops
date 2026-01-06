@@ -1,19 +1,27 @@
 #!/usr/bin/env node
 
-// Load environment variables from .env file (for local development)
-import 'dotenv/config';
+// Load environment variables from .env file for local development
+// Skip in GitHub Actions (which provides env vars directly)
+if (!isRunningInCi()) {
+  try {
+    // @ts-ignore - dotenv is a dev dependency, only used locally
+    await import('dotenv/config');
+  } catch {
+    // dotenv not installed or no .env file - that's OK
+  }
+}
 
 import { Octokit } from '@octokit/rest';
 import { GitHubService } from './adapters/github-service.js';
-import { postIssueComment, setLabels } from './github.js';
-import { TransitionEvent, WorkflowType } from './models/types.js';
+import { isRunningInCi, postIssueComment, setLabels } from './github.js';
+import { TransitionEvent } from './models/types.js';
 import { parseIssueTemplate } from './parsing.js';
-import { isDiscoveryOk, validateAndTransform } from './schema.js';
+import { validateAndTransform } from './schema.js';
+import { Logger } from './services/logger.js';
 import { StateManager } from './services/state-manager.js';
 import { TaskManager } from './services/task-manager.js';
 import { TemplateDetector } from './services/template-detector.js';
 import { WorkflowOrchestrator } from './services/workflow-orchestrator.js';
-import { Logger } from './services/logger.js';
 import { getWorkflow } from './workflows/index.js';
 
 const logger = new Logger();
@@ -69,12 +77,12 @@ export async function run(): Promise<void> {
 
     // Check if workflow is already initialized
     const existingState = await stateManager.loadState(issueNum);
-    
+
     if (existingState) {
       logger.info('✅ Workflow already initialized');
       logger.info(`Current stage: ${existingState.currentStage}`);
       logger.info(`Status: ${existingState.status}`);
-      
+
       // TODO: Handle task completion events (check if this is a task issue being closed)
       // TODO: Handle grace period expiration checks
       // For now, just log and return
@@ -97,7 +105,11 @@ export async function run(): Promise<void> {
           // Get next non-empty line after header
           for (let j = i + 1; j < lines.length; j++) {
             const line = lines[j]?.trim() || '';
-            if (line && !line.startsWith('_No response_') && !line.startsWith('###')) {
+            if (
+              line &&
+              !line.startsWith('_No response_') &&
+              !line.startsWith('###')
+            ) {
               return line;
             }
             // Stop if we hit another header
@@ -130,7 +142,9 @@ export async function run(): Promise<void> {
 
     // Only initialize workflow if validation succeeds
     if (!result.success) {
-      logger.info('⚠️ Validation failed - workflow will not start until issues are fixed');
+      logger.info(
+        '⚠️ Validation failed - workflow will not start until issues are fixed',
+      );
       logger.info('User can edit the issue to fix validation errors');
       return;
     }
@@ -142,7 +156,9 @@ export async function run(): Promise<void> {
     const workflowType = templateDetector.detect(labels, issueBody);
 
     if (!workflowType) {
-      logger.info('ℹ️ No workflow type detected - this may not be a workflow issue');
+      logger.info(
+        'ℹ️ No workflow type detected - this may not be a workflow issue',
+      );
       logger.info('Validation complete, no further automation needed');
       return;
     }
@@ -152,7 +168,9 @@ export async function run(): Promise<void> {
     // Get workflow definition
     const workflowDef = getWorkflow(workflowType);
     if (!workflowDef) {
-      logger.error(`❌ Workflow definition not found for type: ${workflowType}`);
+      logger.error(
+        `❌ Workflow definition not found for type: ${workflowType}`,
+      );
       logger.error('This workflow type may not be implemented yet');
       return;
     }
@@ -178,7 +196,9 @@ export async function run(): Promise<void> {
     );
 
     if (transitionedState) {
-      logger.info(`✅ Transitioned to stage: ${transitionedState.currentStage}`);
+      logger.info(
+        `✅ Transitioned to stage: ${transitionedState.currentStage}`,
+      );
 
       // Create tasks for the new stage
       const currentStage = workflowDef.stages.find(

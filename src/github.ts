@@ -311,3 +311,19 @@ export async function setLabels(
     throw error;
   }
 }
+
+/**
+ * Returns true if running in ANY CI environment (GitHub, GitLab, Travis, etc).
+ * Most CI providers set the 'CI' variable to 'true'.
+ */
+export function isRunningInCi() {
+  const ciValue = process.env.CI;
+  // Check if defined and if it equals 'true' (case-insensitive)
+  if (!ciValue) {
+    return false;
+  }
+
+  const v = ciValue.toLowerCase();
+
+  return v === 'true' || v === '1';
+}

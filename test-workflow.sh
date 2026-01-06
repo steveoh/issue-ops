@@ -107,5 +107,5 @@ echo ""
 echo "Running workflow initialization..."
 echo ""
 
-# Run the main script
+# Run the main script (dotenv loads automatically for local dev)
 node lib/src/main.js
