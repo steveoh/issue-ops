@@ -14,6 +14,7 @@ import { StateManager } from '../src/services/state-manager.js';
 class MockGitHubService extends GitHubService {
   private comments = new Map<number, string>();
   private nextCommentId = 1000;
+  private issueBodies = new Map<number, string>();
 
   constructor() {
     super(new Octokit(), 'test-owner', 'test-repo');
@@ -48,9 +49,18 @@ class MockGitHubService extends GitHubService {
     this.comments.set(commentId, body);
   }
 
+  override async getIssueBody(issueNumber: number): Promise<string> {
+    return this.issueBodies.get(issueNumber) || '';
+  }
+
+  override async updateIssueBody(issueNumber: number, body: string): Promise<void> {
+    this.issueBodies.set(issueNumber, body);
+  }
+
   // Helper for tests
   clear() {
     this.comments.clear();
+    this.issueBodies.clear();
   }
 }
 
@@ -99,16 +109,15 @@ test('StateManager.saveState creates new comment', async (t) => {
   const stateManager = new StateManager(github);
   const testState = createTestState();
 
+  // Set initial issue body (simulating issue creation)
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
+
   await stateManager.saveState(testState);
 
-  // Verify comment was created
-  const commentId = await github.findBotComment(123, '<!-- issue-ops-state');
-  t.truthy(commentId);
-  t.not(commentId, null);
-
-  const commentBody = await github.getComment(commentId!);
-  t.true(commentBody.includes('<!-- issue-ops-state'));
-  t.true(commentBody.includes('## 🚂 Workflow Progress'));
+  // Verify state was added to issue body
+  const issueBody = await github.getIssueBody(123);
+  t.true(issueBody.includes('<!-- issue-ops-state'));
+  t.true(issueBody.includes('Original Issue'));
 });
 
 test('StateManager.saveState updates existing comment', async (t) => {
@@ -116,33 +125,32 @@ test('StateManager.saveState updates existing comment', async (t) => {
   const stateManager = new StateManager(github);
   const testState = createTestState();
 
+  // Set initial issue body
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
+
   // Save once
   await stateManager.saveState(testState);
-  const firstCommentId = await github.findBotComment(
-    123,
-    '<!-- issue-ops-state',
-  );
+  const firstBody = await github.getIssueBody(123);
 
   // Update state and save again
   testState.status = WorkflowStatus.COMPLETED;
   await stateManager.saveState(testState);
 
-  const secondCommentId = await github.findBotComment(
-    123,
-    '<!-- issue-ops-state',
-  );
+  const secondBody = await github.getIssueBody(123);
 
-  // Should be same comment, not a new one
-  t.is(firstCommentId, secondCommentId);
-
-  const commentBody = await github.getComment(secondCommentId!);
-  t.true(commentBody.includes('completed'));
+  // Should only have one state marker
+  const stateMatches = secondBody.match(/<!-- issue-ops-state/g);
+  t.is(stateMatches?.length, 1);
+  t.true(secondBody.includes('completed'));
 });
 
 test('StateManager.loadState parses state correctly', async (t) => {
   const github = new MockGitHubService();
   const stateManager = new StateManager(github);
   const testState = createTestState();
+
+  // Set initial issue body
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
 
   // Save state
   await stateManager.saveState(testState);
@@ -163,6 +171,9 @@ test('StateManager.saveState updates timestamp', async (t) => {
   const stateManager = new StateManager(github);
   const testState = createTestState();
 
+  // Set initial issue body
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
+
   const originalUpdatedAt = testState.updatedAt;
 
   // Wait a bit to ensure timestamp changes
@@ -177,6 +188,9 @@ test('StateManager renders state with task issues', async (t) => {
   const github = new MockGitHubService();
   const stateManager = new StateManager(github);
   const testState = createTestState();
+
+  // Set initial issue body
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
 
   // Add task issues to the state
   testState.stages['deprecation-review']!.taskIssues = [
@@ -202,17 +216,20 @@ test('StateManager renders state with task issues', async (t) => {
 
   await stateManager.saveState(testState);
 
-  const commentId = await github.findBotComment(123, '<!-- issue-ops-state');
-  const commentBody = await github.getComment(commentId!);
+  const issueBody = await github.getIssueBody(123);
 
-  t.true(commentBody.includes('Task #124'));
-  t.true(commentBody.includes('Task #125'));
+  // State is now embedded in JSON, check that task issues are in the JSON
+  t.true(issueBody.includes('"number": 124'));
+  t.true(issueBody.includes('"number": 125'));
 });
 
 test('StateManager renders grace period info', async (t) => {
   const github = new MockGitHubService();
   const stateManager = new StateManager(github);
   const testState = createTestState();
+
+  // Set initial issue body
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
 
   // Add grace period
   if (testState.stages['deprecation-review']) {
@@ -222,17 +239,20 @@ test('StateManager renders grace period info', async (t) => {
 
   await stateManager.saveState(testState);
 
-  const commentId = await github.findBotComment(123, '<!-- issue-ops-state');
-  t.not(commentId, null);
-  const commentBody = await github.getComment(commentId!);
+  const issueBody = await github.getIssueBody(123);
 
-  t.true(commentBody.includes('⏰ **Grace Period**'));
+  // State is now embedded in JSON
+  t.true(issueBody.includes('gracePeriodEndsAt'));
+  t.true(issueBody.includes('2026-01-30'));
 });
 
 test('StateManager renders feature flags', async (t) => {
   const github = new MockGitHubService();
   const stateManager = new StateManager(github);
   const testState = createTestState();
+
+  // Set initial issue body
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
 
   testState.featureFlags = {
     skipValidation: true,
@@ -241,11 +261,11 @@ test('StateManager renders feature flags', async (t) => {
 
   await stateManager.saveState(testState);
 
-  const commentId = await github.findBotComment(123, '<!-- issue-ops-state');
-  const commentBody = await github.getComment(commentId!);
+  const issueBody = await github.getIssueBody(123);
 
-  t.true(commentBody.includes('🚩 **Feature Flags**'));
-  t.true(commentBody.includes('skipValidation'));
+  // State is now embedded in JSON
+  t.true(issueBody.includes('featureFlags'));
+  t.true(issueBody.includes('skipValidation'));
 });
 
 test('StateManager validates state on save', async (t) => {
@@ -279,6 +299,9 @@ test('StateManager includes stage emojis based on status', async (t) => {
   const stateManager = new StateManager(github);
   const testState = createTestState();
 
+  // Set initial issue body
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
+
   if (testState.stages['deprecation-review']) {
     testState.stages['deprecation-review'].status = StageStatus.COMPLETED;
   }
@@ -289,10 +312,11 @@ test('StateManager includes stage emojis based on status', async (t) => {
 
   await stateManager.saveState(testState);
 
-  const commentId = await github.findBotComment(123, '<!-- issue-ops-state');
-  t.not(commentId, null);
-  const commentBody = await github.getComment(commentId!);
+  const issueBody = await github.getIssueBody(123);
 
-  t.true(commentBody.includes('✅ **deprecation-review**')); // completed
-  t.true(commentBody.includes('▶️ **impact-assessment**')); // current
+  // State is now embedded in JSON, check stage status values
+  t.true(issueBody.includes('deprecation-review'));
+  t.true(issueBody.includes(StageStatus.COMPLETED));
+  t.true(issueBody.includes('impact-assessment'));
+  t.true(issueBody.includes(StageStatus.IN_PROGRESS));
 });

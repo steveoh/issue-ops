@@ -173,7 +173,8 @@ test('createTaskIssues creates issues from templates', async (t) => {
   const issue1 = github.getIssue(tasks[0].number);
   t.truthy(issue1);
   t.is(issue1!.title, 'Review data quality for TestLayer');
-  t.true(issue1!.body.includes('**Parent Issue**: #123'));
+  t.true(issue1!.body.includes('**Tracked in:**'));
+  t.true(issue1!.body.includes('- #123'));
   t.true(issue1!.body.includes('**Stage**: review'));
   t.deepEqual(issue1!.labels, ['task', 'review']);
 });
@@ -241,8 +242,8 @@ test('createTaskIssues posts summary comment', async (t) => {
 
   const comments = github.getComments(123);
   t.is(comments.length, 1);
-  t.true(comments[0].includes('Tasks Created for Stage: review'));
-  t.true(comments[0].includes('**Progress**: 0/2 completed'));
+  t.true(comments[0].includes('Tasks for Review'));
+  t.true(comments[0].includes('Track progress: 0/2 completed'));
 });
 
 test('areAllTasksCompleted returns true when all tasks done', async (t) => {

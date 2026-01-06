@@ -23,23 +23,21 @@ export class StateManager {
   async loadState(issueNumber: number): Promise<WorkflowState | null> {
     this.logger.debug(`Loading state for issue #${issueNumber}`);
 
-    const commentId = await this.github.findBotComment(
-      issueNumber,
-      this.stateMarker,
-    );
+    // Get issue body
+    const issueBody = await this.github.getIssueBody(issueNumber);
 
-    if (!commentId) {
+    // Check if state marker exists
+    if (!issueBody.includes(this.stateMarker)) {
       this.logger.debug(`No state found for issue #${issueNumber}`);
       return null;
     }
 
-    const commentBody = await this.github.getComment(commentId);
-    return this.parseStateFromComment(commentBody);
+    return this.parseStateFromComment(issueBody);
   }
 
   /**
-   * Save workflow state to issue comment
-   * Creates new comment if none exists, updates existing otherwise
+   * Save workflow state to issue body
+   * Embeds state in HTML comment at the top of the issue
    * @param state - Workflow state to save
    * @throws InvalidStateError if state is invalid
    */
@@ -53,26 +51,26 @@ export class StateManager {
     // Update timestamp
     state.updatedAt = new Date().toISOString();
 
-    const commentBody = this.renderStateComment(state);
-    const existingCommentId = await this.github.findBotComment(
-      state.issueNumber,
-      this.stateMarker,
+    // Get the current issue body
+    const existingBody = await this.github.getIssueBody(state.issueNumber);
+    
+    // Remove any existing state and add new state
+    const stateJson = JSON.stringify(state, null, 2);
+    const stateComment = `${this.stateMarker}\n${stateJson}\n-->`;
+    
+    // Remove old state if present
+    const withoutState = existingBody.replace(
+      /<!-- issue-ops-state\s*\n[\s\S]*?\n-->/,
+      '',
     );
+    
+    // Add state at the very beginning of the issue body
+    const updatedBody = `${stateComment}\n\n${withoutState}`;
 
-    if (existingCommentId) {
-      await this.github.updateComment(existingCommentId, commentBody);
-      this.logger.debug(
-        `Updated state comment #${existingCommentId} for issue #${state.issueNumber}`,
-      );
-    } else {
-      const commentId = await this.github.createComment(
-        state.issueNumber,
-        commentBody,
-      );
-      this.logger.debug(
-        `Created state comment #${commentId} for issue #${state.issueNumber}`,
-      );
-    }
+    await this.github.updateIssueBody(state.issueNumber, updatedBody);
+    this.logger.debug(
+      `Updated state in issue body for issue #${state.issueNumber}`,
+    );
   }
 
   /**
@@ -109,18 +107,6 @@ export class StateManager {
         },
       );
     }
-  }
-
-  /**
-   * Render workflow state as a formatted comment
-   * Returns machine-readable JSON state in an HTML comment with minimal visible text
-   * @param state - Workflow state to render
-   * @returns HTML comment with embedded JSON state
-   */
-  private renderStateComment(state: WorkflowState): string {
-    // Serialize state to JSON and wrap in HTML comment
-    const stateJson = JSON.stringify(state, null, 2);
-    return `${this.stateMarker}\n${stateJson}\n-->\n\n_Workflow state: ${state.workflowType} (${state.status})_`;
   }
 
   /**

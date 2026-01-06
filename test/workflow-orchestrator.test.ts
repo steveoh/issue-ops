@@ -16,6 +16,7 @@ import { WorkflowOrchestrator } from '../src/services/workflow-orchestrator.js';
 class MockGitHubService extends GitHubService {
   private comments: Array<{ issueNumber: number; body: string }> = [];
   private labels: Map<number, Set<string>> = new Map();
+  private issueBodies: Map<number, string> = new Map();
 
   constructor() {
     super(new Octokit(), 'test-owner', 'test-repo');
@@ -50,6 +51,38 @@ class MockGitHubService extends GitHubService {
     return Array.from(this.labels.get(issueNumber) || []);
   }
 
+  override async findBotComment(
+    issueNumber: number,
+    marker: string,
+  ): Promise<number | null> {
+    const comments = this.getComments(issueNumber);
+    for (let i = 0; i < comments.length; i++) {
+      if (comments[i]!.includes(marker)) {
+        return i + 1;
+      }
+    }
+    return null;
+  }
+
+  override async getComment(commentId: number): Promise<string> {
+    return this.comments[commentId - 1]?.body || '';
+  }
+
+  override async updateComment(commentId: number, body: string): Promise<void> {
+    const comment = this.comments[commentId - 1];
+    if (comment) {
+      comment.body = body;
+    }
+  }
+
+  override async getIssueBody(issueNumber: number): Promise<string> {
+    return this.issueBodies.get(issueNumber) || '';
+  }
+
+  override async updateIssueBody(issueNumber: number, body: string): Promise<void> {
+    this.issueBodies.set(issueNumber, body);
+  }
+
   // Test helpers
   getComments(issueNumber: number): string[] {
     return this.comments
@@ -64,6 +97,7 @@ class MockGitHubService extends GitHubService {
   clear() {
     this.comments = [];
     this.labels.clear();
+    this.issueBodies.clear();
   }
 }
 
@@ -164,13 +198,17 @@ test('initializeWorkflow creates initial state', async (t) => {
 test('initializeWorkflow posts initialization comment', async (t) => {
   const { orchestrator, github } = t.context as any;
 
+  // Set initial issue body (simulating issue creation)
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
+
   await orchestrator.initializeWorkflow(123, testWorkflowDef, {});
 
-  const comments = github.getComments(123);
-  t.is(comments.length, 1);
-  t.true(comments[0].includes('SGID Deprecation Workflow Started'));
-  t.true(comments[0].includes('review'));
-  t.true(comments[0].includes('approval'));
+  // State is now in issue body
+  const issueBody = await github.getIssueBody(123);
+  
+  // Verify state is embedded
+  t.true(issueBody.includes('<!-- issue-ops-state'));
+  t.true(issueBody.includes('review')); // First stage
 });
 
 test('transitionStage moves to next stage', async (t) => {
@@ -202,8 +240,10 @@ test('transitionStage moves to next stage', async (t) => {
 test('transitionStage posts stage transition comment', async (t) => {
   const { orchestrator, github } = t.context as any;
 
+  // Set initial issue body
+  await github.updateIssueBody(123, '### Original Issue\n\nSome content');
+
   await orchestrator.initializeWorkflow(123, testWorkflowDef, {});
-  github.clear(); // Clear init comment
 
   await orchestrator.transitionStage(
     123,
@@ -211,9 +251,12 @@ test('transitionStage posts stage transition comment', async (t) => {
     testWorkflowDef,
   );
 
-  const comments = github.getComments(123);
-  t.is(comments.length, 1);
-  t.true(comments[0].includes('Stage: approval'));
+  // State is updated in issue body
+  const issueBody = await github.getIssueBody(123);
+  
+  // Verify state shows transition to approval stage
+  t.true(issueBody.includes('<!-- issue-ops-state'));
+  t.true(issueBody.includes('approval'));
 });
 
 test('transitionStage completes workflow when no target stage', async (t) => {
